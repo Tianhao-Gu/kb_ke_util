@@ -68,7 +68,7 @@ class kb_ke_util(object):
 
     def run_linkage(self, params, context=None):
         """
-        run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+        run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
         reference: 
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
         :param params: instance of type "LinkageParams" (Input of the
@@ -88,6 +88,39 @@ class kb_ke_util(object):
         """
         return self._client.call_method(
             'kb_ke_util.run_linkage',
+            [params], self._service_ver, context)
+
+    def run_fcluster(self, params, context=None):
+        """
+        run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+        :param params: instance of type "FclusterParams" (Input of the
+           run_fcluster function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) dist_threshold - the
+           threshold to apply when forming flat clusters Optional arguments:
+           labels - items corresponding to each linkage_matrix element (If
+           labels are given, result flat_cluster will be mapped to element in
+           labels.) criterion - The criterion to use in forming flat
+           clusters. Default set to 'inconsistent'. The criterion can be
+           ["inconsistent", "distance", "maxclust"] Note: Advanced criterion
+           'monocrit', 'maxclust_monocrit' in
+           scipy.cluster.hierarchy.fcluster library are not implemented
+           Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.fcluster.html) -> structure: parameter "linkage_matrix"
+           of list of list of String, parameter "dist_threshold" of Double,
+           parameter "labels" of list of String, parameter "criterion" of
+           String
+        :returns: instance of type "FclusterOutput" (Ouput of the
+           run_fcluster function flat_cluster - A dictionary of flat
+           clusters. Each element of flat_cluster representing a cluster
+           contains a label array. (If labels is none, element position array
+           is returned to each cluster group)) -> structure: parameter
+           "flat_cluster" of mapping from String to list of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.run_fcluster',
             [params], self._service_ver, context)
 
     def status(self, context=None):

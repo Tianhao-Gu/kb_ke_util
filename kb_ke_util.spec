@@ -70,10 +70,47 @@ module kb_ke_util {
     list<list<string>> linkage_matrix;
   } LinkageOutput;
 
-  /* run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+  /* run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
      reference: 
      https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html*/
   funcdef run_linkage(LinkageParams params) returns(LinkageOutput returnVal) authentication required;
+
+
+  /* Input of the run_fcluster function
+    linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+    dist_threshold - the threshold to apply when forming flat clusters
+
+    Optional arguments:
+    labels - items corresponding to each linkage_matrix element 
+             (If labels are given, result flat_cluster will be mapped to element in labels.)
+    criterion - The criterion to use in forming flat clusters. Default set to 'inconsistent'.
+                The criterion can be 
+                ["inconsistent", "distance", "maxclust"]
+                Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
+                scipy.cluster.hierarchy.fcluster library are not implemented
+                Details refer to: 
+                https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+  */
+  typedef structure {
+    list<list<string>> linkage_matrix;
+    float dist_threshold;
+    list<string> labels;
+    string criterion;
+  } FclusterParams;
+
+  /* Ouput of the run_fcluster function
+     flat_cluster - A dictionary of flat clusters.
+                    Each element of flat_cluster representing a cluster contains a label array. 
+                    (If labels is none, element position array is returned to each cluster group)
+  */
+  typedef structure {
+    mapping<string, list<string>> flat_cluster;
+  } FclusterOutput;
+
+  /* run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+     reference: 
+     https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html*/
+  funcdef run_fcluster(FclusterParams params) returns(FclusterOutput returnVal) authentication required;
 
 
 };

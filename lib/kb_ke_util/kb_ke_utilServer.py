@@ -341,6 +341,10 @@ class Application(object):
                              name='kb_ke_util.run_linkage',
                              types=[dict])
         self.method_authentication['kb_ke_util.run_linkage'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_ke_util.run_fcluster,
+                             name='kb_ke_util.run_fcluster',
+                             types=[dict])
+        self.method_authentication['kb_ke_util.run_fcluster'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_ke_util.status,
                              name='kb_ke_util.status',
                              types=[dict])

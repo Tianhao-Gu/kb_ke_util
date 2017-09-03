@@ -242,7 +242,7 @@ LinkageOutput is a reference to a hash where the following keys are defined:
 
 =item Description
 
-run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
 reference: 
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
 
@@ -296,6 +296,104 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.lin
     }
 }
  
+
+
+=head2 run_fcluster
+
+  $returnVal = $obj->run_fcluster($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.FclusterParams
+$returnVal is a kb_ke_util.FclusterOutput
+FclusterParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_threshold has a value which is a float
+	labels has a value which is a reference to a list where each element is a string
+	criterion has a value which is a string
+FclusterOutput is a reference to a hash where the following keys are defined:
+	flat_cluster has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.FclusterParams
+$returnVal is a kb_ke_util.FclusterOutput
+FclusterParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_threshold has a value which is a float
+	labels has a value which is a reference to a list where each element is a string
+	criterion has a value which is a string
+FclusterOutput is a reference to a hash where the following keys are defined:
+	flat_cluster has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+reference: 
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+=back
+
+=cut
+
+ sub run_fcluster
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_fcluster (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_fcluster:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_fcluster');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_fcluster",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_fcluster',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_fcluster",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_fcluster',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -339,16 +437,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'run_linkage',
+                method_name => 'run_fcluster',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method run_linkage",
+            error => "Error invoking method run_fcluster",
             status_line => $self->{client}->status_line,
-            method_name => 'run_linkage',
+            method_name => 'run_fcluster',
         );
     }
 }
@@ -584,6 +682,98 @@ linkage_matrix has a value which is a reference to a list where each element is 
 
 a reference to a hash where the following keys are defined:
 linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 FclusterParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_fcluster function
+linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+dist_threshold - the threshold to apply when forming flat clusters
+
+Optional arguments:
+labels - items corresponding to each linkage_matrix element 
+         (If labels are given, result flat_cluster will be mapped to element in labels.)
+criterion - The criterion to use in forming flat clusters. Default set to 'inconsistent'.
+            The criterion can be 
+            ["inconsistent", "distance", "maxclust"]
+            Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
+            scipy.cluster.hierarchy.fcluster library are not implemented
+            Details refer to: 
+            https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_threshold has a value which is a float
+labels has a value which is a reference to a list where each element is a string
+criterion has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_threshold has a value which is a float
+labels has a value which is a reference to a list where each element is a string
+criterion has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 FclusterOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_fcluster function
+flat_cluster - A dictionary of flat clusters.
+               Each element of flat_cluster representing a cluster contains a label array. 
+               (If labels is none, element position array is returned to each cluster group)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+flat_cluster has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+flat_cluster has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
 
 
 =end text
