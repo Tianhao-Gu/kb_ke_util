@@ -96,12 +96,23 @@ class kb_ke_utilTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
+    def fail_run_fcluster(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().run_fcluster(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def check_run_pdist_output(self, ret):
         self.assertTrue('square_dist_matrix' in ret)
         self.assertTrue('labels' in ret)
 
     def check_run_linkage_output(self, ret):
         self.assertTrue('linkage_matrix' in ret)
+
+    def check_run_fcluster_output(self, ret):
+        self.assertTrue('flat_cluster' in ret)
 
     def test_bad_run_pdist_params(self):
         self.start_test()
@@ -159,3 +170,31 @@ class kb_ke_utilTest(unittest.TestCase):
         params = {'square_dist_matrix': square_dist_matrix}
         ret = self.getImpl().run_linkage(self.ctx, params)[0]
         self.check_run_linkage_output(ret)
+
+    def test_bad_run_fcluster_params(self):
+        self.start_test()
+        invalidate_params = {'missing_linkage_matrix': 'linkage_matrix',
+                             'dist_threshold': 'dist_threshold'}
+        error_msg = '"linkage_matrix" parameter is required, but missing'
+        self.fail_run_fcluster(invalidate_params, error_msg)
+
+        invalidate_params = {'linkage_matrix': 'linkage_matrix',
+                             'missing_dist_threshold': 'dist_threshold'}
+        error_msg = '"dist_threshold" parameter is required, but missing'
+        self.fail_run_fcluster(invalidate_params, error_msg)
+
+        invalidate_params = {'linkage_matrix': 'linkage_matrix',
+                             'dist_threshold': 'dist_threshold',
+                             'criterion': 'invalidate_criterion'}
+        error_msg = "INPUT ERROR:\nInput criterion [invalidate_criterion] is not valid.\n"
+        self.fail_run_fcluster(invalidate_params, error_msg, contains=True)
+
+    def test_run_fcluster(self):
+        self.start_test()
+        linkage_matrix = [[1.0, 2.0, 0.6, 2.0],
+                          [0.0, 3.0, 0.87177978, 3.0]]
+        params = {'linkage_matrix': linkage_matrix,
+                  'dist_threshold': 0.7,
+                  'labels': ['gene_1', 'gene_2', 'gene_3']}
+        ret = self.getImpl().run_fcluster(self.ctx, params)[0]
+        self.check_run_fcluster_output(ret)

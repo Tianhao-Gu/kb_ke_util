@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "51ea209b800ec2675b0675fb0642024408272dc7"
+    GIT_COMMIT_HASH = "c69df485c6e5d801e614e841e62bc72c154d9d1a"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -89,7 +89,7 @@ class kb_ke_util:
 
     def run_linkage(self, ctx, params):
         """
-        run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+        run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
         reference: 
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
         :param params: instance of type "LinkageParams" (Input of the
@@ -121,6 +121,53 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method run_linkage return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def run_fcluster(self, ctx, params):
+        """
+        run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+        :param params: instance of type "FclusterParams" (Input of the
+           run_fcluster function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) dist_threshold - the
+           threshold to apply when forming flat clusters Optional arguments:
+           labels - items corresponding to each linkage_matrix element (If
+           labels are given, result flat_cluster will be mapped to element in
+           labels.) criterion - The criterion to use in forming flat
+           clusters. Default set to 'inconsistent'. The criterion can be
+           ["inconsistent", "distance", "maxclust"] Note: Advanced criterion
+           'monocrit', 'maxclust_monocrit' in
+           scipy.cluster.hierarchy.fcluster library are not implemented
+           Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.fcluster.html) -> structure: parameter "linkage_matrix"
+           of list of list of String, parameter "dist_threshold" of Double,
+           parameter "labels" of list of String, parameter "criterion" of
+           String
+        :returns: instance of type "FclusterOutput" (Ouput of the
+           run_fcluster function flat_cluster - A dictionary of flat
+           clusters. Each element of flat_cluster representing a cluster
+           contains a label array. (If labels is none, element position array
+           is returned to each cluster group)) -> structure: parameter
+           "flat_cluster" of mapping from String to list of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_fcluster
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_fcluster(params)
+        #END run_fcluster
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_fcluster return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

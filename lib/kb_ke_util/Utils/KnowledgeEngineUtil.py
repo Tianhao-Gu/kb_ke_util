@@ -19,6 +19,8 @@ class KnowledgeEngineUtil:
 
     METHOD = ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
 
+    CRITERION = ["inconsistent", "distance", "maxclust"]
+
     def _validate_run_pdist_params(self, params):
         """
         _validate_run_pdist_params:
@@ -73,6 +75,26 @@ class KnowledgeEngineUtil:
             error_msg += 'Available metric: {}'.format(self.METHOD)
             raise ValueError(error_msg)
 
+    def _validate_run_fcluster_params(self, params):
+        """
+        _validate_run_fcluster_params:
+                validates params passed to run_fcluster method
+        """
+
+        log('start validating run_fcluster params')
+
+        # check for required parameters
+        for p in ['linkage_matrix', 'dist_threshold']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
+
+        # check method validation
+        criterion = params.get('criterion')
+        if criterion and criterion not in self.CRITERION:
+            error_msg = 'INPUT ERROR:\nInput criterion [{}] is not valid.\n'.format(criterion)
+            error_msg += 'Available metric: {}'.format(self.CRITERION)
+            raise ValueError(error_msg)
+
     def _is_number_string(self, str):
         """
         _is_number_string: check number string
@@ -120,6 +142,30 @@ class KnowledgeEngineUtil:
         data = numpy.array(num_values)
 
         return data
+
+    def _process_fcluster(self, fcluster, labels=None):
+        """
+        _process_fcluster: assign labels to corresponding cluster group
+                           if labels is none, return element pos array in each cluster group
+        """
+
+        flat_cluster = {}
+        for pos, element in enumerate(fcluster):
+            cluster_name = str(element)
+            if cluster_name not in flat_cluster:
+                if labels:
+                    flat_cluster.update({cluster_name: [labels[pos]]})
+                else:
+                    flat_cluster.update({cluster_name: [pos]})
+            else:
+                cluster = flat_cluster.get(cluster_name)
+                if labels:
+                    cluster.append(labels[pos])
+                else:
+                    cluster.append(pos)
+                flat_cluster.update({cluster_name: cluster})
+
+        return flat_cluster
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -170,8 +216,8 @@ class KnowledgeEngineUtil:
         labels = data_matrix.get('row_ids')
 
         data = self._get_data(data_matrix)
-        dist_matrix = dist.pdist(data)
-        square_dist_matrix = dist.squareform(dist_matrix, metric)
+        dist_matrix = dist.pdist(data, metric=metric)
+        square_dist_matrix = dist.squareform(dist_matrix)
 
         returnVal = {'square_dist_matrix': square_dist_matrix,
                      'labels': labels}
@@ -210,5 +256,54 @@ class KnowledgeEngineUtil:
         linkage_matrix = hier.linkage(square_dist_matrix, method=method)
 
         returnVal = {'linkage_matrix': linkage_matrix}
+
+        return returnVal
+
+    def run_fcluster(self, params):
+        """
+        run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+        linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+        dist_threshold - the threshold to apply when forming flat clusters
+
+        Optional arguments:
+        labels - items corresponding to each linkage_matrix element 
+                 (If labels are given, result flat_cluster will be mapped to element in labels.)
+        criterion - The criterion to use in forming flat clusters. Default set to 'inconsistent'.
+                    The criterion can be 
+                    ["inconsistent", "distance", "maxclust"]
+                    Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
+                    scipy.cluster.hierarchy.fcluster library are not implemented
+                    Details refer to: 
+                    https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+        return:
+        flat_cluster - A dictionary of flat clusters.
+                       Each element of flat_cluster representing a cluster contains a label array. 
+                      (If labels is none, element position array is returned to each cluster group)
+        """
+
+        log('--->\nrunning run_fcluster\n' +
+            'params:\n{}'.format(json.dumps(params, indent=1)))
+
+        self._validate_run_fcluster_params(params)
+
+        linkage_matrix = params.get('linkage_matrix')
+        dist_threshold = params.get('dist_threshold')
+        criterion = params.get('criterion')
+        if not criterion:
+            criterion = 'inconsistent'
+        labels = params.get('labels')
+
+        fcluster = hier.fcluster(linkage_matrix, dist_threshold, criterion=criterion)
+
+        if labels:
+            flat_cluster = self._process_fcluster(fcluster, labels=labels)
+        else:
+            flat_cluster = self._process_fcluster(fcluster)
+
+        returnVal = {'flat_cluster': flat_cluster}
 
         return returnVal

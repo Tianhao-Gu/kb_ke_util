@@ -185,7 +185,7 @@ public class KbKeUtilClient {
     /**
      * <p>Original spec-file function name: run_linkage</p>
      * <pre>
-     * run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+     * run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
      * reference: 
      * https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
      * </pre>
@@ -199,6 +199,26 @@ public class KbKeUtilClient {
         args.add(params);
         TypeReference<List<LinkageOutput>> retType = new TypeReference<List<LinkageOutput>>() {};
         List<LinkageOutput> res = caller.jsonrpcCall("kb_ke_util.run_linkage", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: run_fcluster</p>
+     * <pre>
+     * run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
+     * reference: 
+     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.FclusterParams FclusterParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.FclusterOutput FclusterOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public FclusterOutput runFcluster(FclusterParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<FclusterOutput>> retType = new TypeReference<List<FclusterOutput>>() {};
+        List<FclusterOutput> res = caller.jsonrpcCall("kb_ke_util.run_fcluster", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
