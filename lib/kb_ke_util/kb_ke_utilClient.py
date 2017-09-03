@@ -33,6 +33,63 @@ class kb_ke_util(object):
             trust_all_ssl_certificates=trust_all_ssl_certificates,
             auth_svc=auth_svc)
 
+    def run_pdist(self, params, context=None):
+        """
+        run_pdist: a wrapper method for scipy.spatial.distance.pdist
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+        :param params: instance of type "PdistParams" (Input of the run_pdist
+           function data_matrix - raw data matrix with row_ids, col_ids and
+           values e.g.{'row_ids': ['gene_1', 'gene_2'], 'col_ids':
+           ['condition_1', 'condition_2'], 'values': [[0.1, 0.2], [0.3, 0.4],
+           [0.5, 0.6]]} Optional arguments: metric - The distance metric to
+           use. Default set to 'euclidean'. The distance function can be
+           ["braycurtis", "canberra", "chebyshev", "cityblock",
+           "correlation", "cosine", "dice", "euclidean", "hamming",
+           "jaccard", "kulsinski", "matching", "rogerstanimoto",
+           "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
+           "yule"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.
+           distance.pdist.html Note: Advanced metric functions 'minkowski',
+           'seuclidean' and 'mahalanobis' included in
+           scipy.spatial.distance.pdist library are not implemented) ->
+           structure: parameter "data_matrix" of mapping from String to
+           String, parameter "metric" of String
+        :returns: instance of type "PdistOutput" (Ouput of the run_pdist
+           function square_dist_matrix - square form of distance matrix where
+           the data is mirrored across the diagonal labels - item name
+           corresponding to each square_dist_matrix element) -> structure:
+           parameter "square_dist_matrix" of list of list of String,
+           parameter "labels" of list of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.run_pdist',
+            [params], self._service_ver, context)
+
+    def run_linkage(self, params, context=None):
+        """
+        run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+        :param params: instance of type "LinkageParams" (Input of the
+           run_linkage function square_dist_matrix - square form of distance
+           matrix (refer to run_pdist return) Optional arguments: method -
+           The linkage algorithm to use. Default set to 'ward'. The method
+           can be ["single", "complete", "average", "weighted", "centroid",
+           "median", "ward"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.linkage.html) -> structure: parameter
+           "square_dist_matrix" of list of list of String, parameter "method"
+           of String
+        :returns: instance of type "LinkageOutput" (Ouput of the run_linkage
+           function linkage_matrix - The hierarchical clustering encoded as a
+           linkage matrix) -> structure: parameter "linkage_matrix" of list
+           of list of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.run_linkage',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('kb_ke_util.status',
                                         [], self._service_ver, context)

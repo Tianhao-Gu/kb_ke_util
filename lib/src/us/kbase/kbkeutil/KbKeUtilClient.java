@@ -11,6 +11,7 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.RpcContext;
+import us.kbase.common.service.UnauthorizedException;
 
 /**
  * <p>Original spec-file module name: kb_ke_util</p>
@@ -28,6 +29,49 @@ public class KbKeUtilClient {
      */
     public KbKeUtilClient(URL url) {
         caller = new JsonClientCaller(url);
+    }
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param token the user's authorization token.
+     * @throws UnauthorizedException if the token is not valid.
+     * @throws IOException if an IOException occurs when checking the token's
+     * validity.
+     */
+    public KbKeUtilClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, token);
+    }
+
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public KbKeUtilClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password);
+    }
+
+    /** Constructs a client with a custom URL
+     * and a custom authorization service URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @param auth the URL of the authorization server.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public KbKeUtilClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password, auth);
+    }
+
+    /** Get the token this client uses to communicate with the server.
+     * @return the authorization token.
+     */
+    public AuthToken getToken() {
+        return caller.getToken();
     }
 
     /** Get the URL of the service with which this client communicates.
@@ -116,6 +160,46 @@ public class KbKeUtilClient {
 
     public void setServiceVersion(String newValue) {
         this.serviceVersion = newValue;
+    }
+
+    /**
+     * <p>Original spec-file function name: run_pdist</p>
+     * <pre>
+     * run_pdist: a wrapper method for scipy.spatial.distance.pdist
+     * reference: 
+     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.PdistParams PdistParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.PdistOutput PdistOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PdistOutput runPdist(PdistParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PdistOutput>> retType = new TypeReference<List<PdistOutput>>() {};
+        List<PdistOutput> res = caller.jsonrpcCall("kb_ke_util.run_pdist", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: run_linkage</p>
+     * <pre>
+     * run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+     * reference: 
+     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.LinkageParams LinkageParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.LinkageOutput LinkageOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public LinkageOutput runLinkage(LinkageParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<LinkageOutput>> retType = new TypeReference<List<LinkageOutput>>() {};
+        List<LinkageOutput> res = caller.jsonrpcCall("kb_ke_util.run_linkage", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
     }
 
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {

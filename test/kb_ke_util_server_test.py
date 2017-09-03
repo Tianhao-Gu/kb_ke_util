@@ -3,7 +3,8 @@ import unittest
 import os  # noqa: F401
 import json  # noqa: F401
 import time
-import requests
+import requests  # noqa: F401
+import inspect
 
 from os import environ
 try:
@@ -75,15 +76,86 @@ class kb_ke_utilTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
-        pass
+    def start_test(self):
+        testname = inspect.stack()[1][3]
+        print('\n*** starting test: ' + testname + ' **')
+
+    def fail_run_pdist(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().run_pdist(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
+    def fail_run_linkage(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().run_linkage(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
+    def check_run_pdist_output(self, ret):
+        self.assertTrue('square_dist_matrix' in ret)
+        self.assertTrue('labels' in ret)
+
+    def check_run_linkage_output(self, ret):
+        self.assertTrue('linkage_matrix' in ret)
+
+    def test_bad_run_pdist_params(self):
+        self.start_test()
+        invalidate_params = {'missing_data_matrix': 'data_matrix'}
+        error_msg = '"data_matrix" parameter is required, but missing'
+        self.fail_run_pdist(invalidate_params, error_msg)
+
+        invalidate_params = {'data_matrix': 'not_dict'}
+        error_msg = "INPUT ERROR:\nRequiring dictionary data_matrix.\nGot: <type 'str'>"
+        self.fail_run_pdist(invalidate_params, error_msg)
+
+        invalidate_params = {'data_matrix': {'missing_keys': 'missing_keys'}}
+        error_msg = 'INPUT ERROR:\nRequiring ["row_ids", "col_ids", "values"] keys.\n'
+        error_msg += 'Got: [\'missing_keys\']'
+        self.fail_run_pdist(invalidate_params, error_msg)
+
+        invalidate_params = {'data_matrix': {'row_ids': 'row_ids',
+                                             'col_ids': 'col_ids',
+                                             'values': 'values'},
+                             'metric': 'invalidate_metric'}
+        error_msg = 'INPUT ERROR:\nInput metric function [invalidate_metric] is not valid.\n'
+        self.fail_run_pdist(invalidate_params, error_msg, contains=True)
+
+    def test_bad_data_matrix(self):
+        params = {'data_matrix': {'row_ids': ['gene_1', 'gene_2', 'gene_3'],
+                                  'col_ids': ['condition_1', 'condition_2', 'condition_3'],
+                                  'values': [['a', 0.2, 0.3], [0.3, 0.4, 0.5], [0.5, 0.6, 0.7]]}}
+        error_msg = "INVALID data_matrix:\ncannot convert all element to number: ['a', 0.2, 0.3]"
+        self.fail_run_pdist(params, error_msg)
+
+    def test_run_pdist(self):
+        self.start_test()
+        params = {'data_matrix': {'row_ids': ['gene_1', 'gene_2', 'gene_3'],
+                                  'col_ids': ['condition_1', 'condition_2', 'condition_3'],
+                                  'values': [[0.1, 0.2, 0.3], [0.3, 0.4, 0.5], [0.5, 0.6, 0.7]]}}
+        ret = self.getImpl().run_pdist(self.ctx, params)[0]
+        self.check_run_pdist_output(ret)
+
+    def test_bad_run_linkage_params(self):
+        self.start_test()
+        invalidate_params = {'missing_square_dist_matrix': 'square_dist_matrix'}
+        error_msg = '"square_dist_matrix" parameter is required, but missing'
+        self.fail_run_linkage(invalidate_params, error_msg)
+
+        invalidate_params = {'square_dist_matrix': 'square_dist_matrix',
+                             'method': 'invalidate_method'}
+        error_msg = "INPUT ERROR:\nInput linkage algorithm [invalidate_method] is not valid.\n"
+        self.fail_run_linkage(invalidate_params, error_msg, contains=True)
+
+    def test_run_linkage(self):
+        self.start_test()
+        square_dist_matrix = [[0, 0.34641016, 0.69282032],
+                              [0.34641016, 0, 0.34641016],
+                              [0.69282032, 0.34641016, 0]]
+        params = {'square_dist_matrix': square_dist_matrix}
+        ret = self.getImpl().run_linkage(self.ctx, params)[0]
+        self.check_run_linkage_output(ret)
