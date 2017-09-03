@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
+import os
+
+from kb_ke_util.Utils.KnowledgeEngineUtil import KnowledgeEngineUtil
 #END_HEADER
 
 
@@ -18,9 +21,9 @@ class kb_ke_util:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
-    GIT_URL = ""
-    GIT_COMMIT_HASH = ""
+    VERSION = "1.0.0"
+    GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
+    GIT_COMMIT_HASH = "51ea209b800ec2675b0675fb0642024408272dc7"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -29,9 +32,98 @@ class kb_ke_util:
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
+        self.config = config
+        self.config['SDK_CALLBACK_URL'] = os.environ['SDK_CALLBACK_URL']
+        self.config['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
         #END_CONSTRUCTOR
         pass
 
+
+    def run_pdist(self, ctx, params):
+        """
+        run_pdist: a wrapper method for scipy.spatial.distance.pdist
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+        :param params: instance of type "PdistParams" (Input of the run_pdist
+           function data_matrix - raw data matrix with row_ids, col_ids and
+           values e.g.{'row_ids': ['gene_1', 'gene_2'], 'col_ids':
+           ['condition_1', 'condition_2'], 'values': [[0.1, 0.2], [0.3, 0.4],
+           [0.5, 0.6]]} Optional arguments: metric - The distance metric to
+           use. Default set to 'euclidean'. The distance function can be
+           ["braycurtis", "canberra", "chebyshev", "cityblock",
+           "correlation", "cosine", "dice", "euclidean", "hamming",
+           "jaccard", "kulsinski", "matching", "rogerstanimoto",
+           "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
+           "yule"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.
+           distance.pdist.html Note: Advanced metric functions 'minkowski',
+           'seuclidean' and 'mahalanobis' included in
+           scipy.spatial.distance.pdist library are not implemented) ->
+           structure: parameter "data_matrix" of mapping from String to
+           String, parameter "metric" of String
+        :returns: instance of type "PdistOutput" (Ouput of the run_pdist
+           function square_dist_matrix - square form of distance matrix where
+           the data is mirrored across the diagonal labels - item name
+           corresponding to each square_dist_matrix element) -> structure:
+           parameter "square_dist_matrix" of list of list of String,
+           parameter "labels" of list of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_pdist
+
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_pdist(params)
+        #END run_pdist
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_pdist return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def run_linkage(self, ctx, params):
+        """
+        run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+        :param params: instance of type "LinkageParams" (Input of the
+           run_linkage function square_dist_matrix - square form of distance
+           matrix (refer to run_pdist return) Optional arguments: method -
+           The linkage algorithm to use. Default set to 'ward'. The method
+           can be ["single", "complete", "average", "weighted", "centroid",
+           "median", "ward"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.linkage.html) -> structure: parameter
+           "square_dist_matrix" of list of list of String, parameter "method"
+           of String
+        :returns: instance of type "LinkageOutput" (Ouput of the run_linkage
+           function linkage_matrix - The hierarchical clustering encoded as a
+           linkage matrix) -> structure: parameter "linkage_matrix" of list
+           of list of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_linkage
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_linkage(params)
+        #END run_linkage
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_linkage return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",

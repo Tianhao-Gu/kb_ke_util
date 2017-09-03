@@ -12,6 +12,7 @@ eval {
     $get_time = sub { Time::HiRes::gettimeofday() };
 };
 
+use Bio::KBase::AuthToken;
 
 # Client version should match Impl version
 # This is a Semantic Version number,
@@ -74,6 +75,27 @@ sub new
 	push(@{$self->{headers}}, 'Kbrpc-Errordest', $self->{kbrpc_error_dest});
     }
 
+    #
+    # This module requires authentication.
+    #
+    # We create an auth token, passing through the arguments that we were (hopefully) given.
+
+    {
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
+	}
+    }
 
     my $ua = $self->{client}->ua;	 
     my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);	 
@@ -84,6 +106,196 @@ sub new
 }
 
 
+
+
+=head2 run_pdist
+
+  $returnVal = $obj->run_pdist($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.PdistParams
+$returnVal is a kb_ke_util.PdistOutput
+PdistParams is a reference to a hash where the following keys are defined:
+	data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+	metric has a value which is a string
+PdistOutput is a reference to a hash where the following keys are defined:
+	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	labels has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.PdistParams
+$returnVal is a kb_ke_util.PdistOutput
+PdistParams is a reference to a hash where the following keys are defined:
+	data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+	metric has a value which is a string
+PdistOutput is a reference to a hash where the following keys are defined:
+	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	labels has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+run_pdist: a wrapper method for scipy.spatial.distance.pdist
+reference: 
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+
+=back
+
+=cut
+
+ sub run_pdist
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_pdist (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_pdist:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_pdist');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_pdist",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_pdist',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_pdist",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_pdist',
+				       );
+    }
+}
+ 
+
+
+=head2 run_linkage
+
+  $returnVal = $obj->run_linkage($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.LinkageParams
+$returnVal is a kb_ke_util.LinkageOutput
+LinkageParams is a reference to a hash where the following keys are defined:
+	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	method has a value which is a string
+LinkageOutput is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.LinkageParams
+$returnVal is a kb_ke_util.LinkageOutput
+LinkageParams is a reference to a hash where the following keys are defined:
+	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	method has a value which is a string
+LinkageOutput is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+run_pdist: a wrapper method for scipy.cluster.hierarchy.linkage
+reference: 
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+=back
+
+=cut
+
+ sub run_linkage
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_linkage (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_linkage:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_linkage');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_linkage",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_linkage',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_linkage",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_linkage',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -119,7 +331,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "${last_module.module_name}.version",
+        method => "kb_ke_util.version",
         params => [],
     });
     if ($result) {
@@ -127,16 +339,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => '${last_method.name}',
+                method_name => 'run_linkage',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method ${last_method.name}",
+            error => "Error invoking method run_linkage",
             status_line => $self->{client}->status_line,
-            method_name => '${last_method.name}',
+            method_name => 'run_linkage',
         );
     }
 }
@@ -170,6 +382,213 @@ sub _validate_version {
 }
 
 =head1 TYPES
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 PdistParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_pdist function
+data_matrix - raw data matrix with row_ids, col_ids and values
+              e.g.{'row_ids': ['gene_1', 'gene_2'], 
+                   'col_ids': ['condition_1', 'condition_2'],
+                   'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
+
+Optional arguments:
+metric - The distance metric to use. Default set to 'euclidean'.
+         The distance function can be 
+         ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
+          "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
+          "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean", 
+          "yule"]
+          Details refer to: 
+          https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+
+Note: Advanced metric functions 'minkowski', 'seuclidean' and 'mahalanobis' included in 
+      scipy.spatial.distance.pdist library are not implemented
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+metric has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+metric has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 PdistOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_pdist function
+square_dist_matrix - square form of distance matrix where the data is mirrored across 
+                     the diagonal
+labels - item name corresponding to each square_dist_matrix element
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+labels has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+labels has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 LinkageParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_linkage function
+square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+
+Optional arguments:
+method - The linkage algorithm to use. Default set to 'ward'.
+         The method can be 
+         ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
+         Details refer to: 
+         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+method has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+method has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 LinkageOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_linkage function
+linkage_matrix - The hierarchical clustering encoded as a linkage matrix
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+
+
+=end text
+
+=back
 
 
 
