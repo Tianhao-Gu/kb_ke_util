@@ -345,6 +345,10 @@ class Application(object):
                              name='kb_ke_util.run_fcluster',
                              types=[dict])
         self.method_authentication['kb_ke_util.run_fcluster'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_ke_util.run_dendrogram,
+                             name='kb_ke_util.run_dendrogram',
+                             types=[dict])
+        self.method_authentication['kb_ke_util.run_dendrogram'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_ke_util.status,
                              name='kb_ke_util.status',
                              types=[dict])

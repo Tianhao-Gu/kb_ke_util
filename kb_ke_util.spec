@@ -112,5 +112,32 @@ module kb_ke_util {
      https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html*/
   funcdef run_fcluster(FclusterParams params) returns(FclusterOutput returnVal) authentication required;
 
+  /* Input of the run_dendrogram function
+    linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+
+    Optional arguments:
+    dist_threshold - the threshold to apply when forming flat clusters (draw a horizontal line to dendrogram)
+    labels - items corresponding to each linkage_matrix element 
+             (If labels are given, result dendrogram x-axis will be mapped to element in labels.)
+    last_merges - show only last given value merged clusters
+  */
+  typedef structure {
+    list<list<string>> linkage_matrix;
+    float dist_threshold;
+    list<string> labels;
+    int last_merges;
+  } DendrogramParams;
+
+  /* Ouput of the run_dendrogram function
+     result_plots - List of result plot path(s)
+  */
+  typedef structure {
+    list<string> result_plots;
+  } DendrogramOutput;
+
+  /* run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+     reference: 
+     https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html*/
+  funcdef run_dendrogram(DendrogramParams params) returns(DendrogramOutput returnVal) authentication required;
 
 };

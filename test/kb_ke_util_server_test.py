@@ -104,6 +104,14 @@ class kb_ke_utilTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
+    def fail_run_dendrogram(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().run_fcluster(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def check_run_pdist_output(self, ret):
         self.assertTrue('square_dist_matrix' in ret)
         self.assertTrue('labels' in ret)
@@ -113,6 +121,9 @@ class kb_ke_utilTest(unittest.TestCase):
 
     def check_run_fcluster_output(self, ret):
         self.assertTrue('flat_cluster' in ret)
+
+    def check_run_dendrogram_output(self, ret):
+        self.assertTrue('result_plots' in ret)
 
     def test_bad_run_pdist_params(self):
         self.start_test()
@@ -198,3 +209,20 @@ class kb_ke_utilTest(unittest.TestCase):
                   'labels': ['gene_1', 'gene_2', 'gene_3']}
         ret = self.getImpl().run_fcluster(self.ctx, params)[0]
         self.check_run_fcluster_output(ret)
+
+    def test_bad_run_dendrogram_params(self):
+        self.start_test()
+        invalidate_params = {'missing_linkage_matrix': 'linkage_matrix'}
+        error_msg = '"linkage_matrix" parameter is required, but missing'
+        self.fail_run_dendrogram(invalidate_params, error_msg)
+
+    def test_run_dendrogram(self):
+        self.start_test()
+        linkage_matrix = [[1.0, 2.0, 0.6, 2.0],
+                          [0.0, 3.0, 0.87177978, 3.0]]
+        params = {'linkage_matrix': linkage_matrix,
+                  'dist_threshold': 0.7,
+                  'labels': ['gene_1', 'gene_2', 'gene_3'],
+                  'last_merges': 2}
+        ret = self.getImpl().run_dendrogram(self.ctx, params)[0]
+        self.check_run_dendrogram_output(ret)

@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "c69df485c6e5d801e614e841e62bc72c154d9d1a"
+    GIT_COMMIT_HASH = "e5b5f00fb7d3cd13888945c05626d5789c4f1f2d"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -168,6 +168,44 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method run_fcluster return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def run_dendrogram(self, ctx, params):
+        """
+        run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+        :param params: instance of type "DendrogramParams" (Input of the
+           run_dendrogram function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) Optional arguments:
+           dist_threshold - the threshold to apply when forming flat clusters
+           (draw a horizontal line to dendrogram) labels - items
+           corresponding to each linkage_matrix element (If labels are given,
+           result dendrogram x-axis will be mapped to element in labels.)
+           last_merges - show only last given value merged clusters) ->
+           structure: parameter "linkage_matrix" of list of list of String,
+           parameter "dist_threshold" of Double, parameter "labels" of list
+           of String, parameter "last_merges" of Long
+        :returns: instance of type "DendrogramOutput" (Ouput of the
+           run_dendrogram function result_plots - List of result plot
+           path(s)) -> structure: parameter "result_plots" of list of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_dendrogram
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_dendrogram(params)
+        #END run_dendrogram
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_dendrogram return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

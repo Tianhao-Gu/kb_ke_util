@@ -1,11 +1,13 @@
 import time
 import json
 import numpy
+import os
+import errno
+import uuid
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
+from matplotlib import pyplot as plt
 
-# import matplotlib
-# matplotlib.use('Agg')
 
 def log(message, prefix_newline=False):
     print(('\n' if prefix_newline else '') + str(time.time()) + ': ' + message)
@@ -20,6 +22,20 @@ class KnowledgeEngineUtil:
     METHOD = ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
 
     CRITERION = ["inconsistent", "distance", "maxclust"]
+
+    def _mkdir_p(self, path):
+        """
+        _mkdir_p: make directory for given path
+        """
+        if not path:
+            return
+        try:
+            os.makedirs(path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
 
     def _validate_run_pdist_params(self, params):
         """
@@ -95,6 +111,19 @@ class KnowledgeEngineUtil:
             error_msg += 'Available metric: {}'.format(self.CRITERION)
             raise ValueError(error_msg)
 
+    def _validate_run_dendrogram_params(self, params):
+        """
+        _validate_run_dendrogram_params:
+                validates params passed to run_dendrogram method
+        """
+
+        log('start validating run_dendrogram params')
+
+        # check for required parameters
+        for p in ['linkage_matrix']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
+
     def _is_number_string(self, str):
         """
         _is_number_string: check number string
@@ -166,6 +195,24 @@ class KnowledgeEngineUtil:
                 flat_cluster.update({cluster_name: cluster})
 
         return flat_cluster
+
+    def _add_distance(self, ddata):
+        """
+        _add_distance: Add distance and cluster count to dendrogram
+
+        credit --
+        Author: Jorn Hees
+        https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/#Eye-Candy
+        """
+        annotate_above = 10  # useful in small plots so annotations don't overlap
+        for i, d, c in zip(ddata['icoord'], ddata['dcoord'], ddata['color_list']):
+            x = 0.5 * sum(i[1:3])
+            y = d[1]
+            if y > annotate_above:
+                plt.plot(x, y, 'o', c=c)
+                plt.annotate("%.3g" % y, (x, y), xytext=(0, -5),
+                             textcoords='offset points',
+                             va='top', ha='center')
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -305,5 +352,79 @@ class KnowledgeEngineUtil:
             flat_cluster = self._process_fcluster(fcluster)
 
         returnVal = {'flat_cluster': flat_cluster}
+
+        return returnVal
+
+    def run_dendrogram(self, params):
+        """
+        run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+
+        linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+
+        Optional arguments:
+        dist_threshold - the threshold to apply when forming flat clusters 
+                         (draw a horizontal line to dendrogram)
+        labels - items corresponding to each linkage_matrix element 
+                (If labels are given, result dendrogram x-axis will be mapped to element in labels)
+        last_merges - show only last given value merged clusters
+
+        return:
+        result_plots - List of result plot path(s)
+        """
+
+        log('--->\nrunning run_dendrogram\n' +
+            'params:\n{}'.format(json.dumps(params, indent=1)))
+
+        self._validate_run_dendrogram_params(params)
+
+        plt.switch_backend('agg')
+
+        result_plots = list()
+        output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(output_directory)
+        plot_file = os.path.join(output_directory, 'dendrogram.png')
+
+        linkage_matrix = params.get('linkage_matrix')
+        dist_threshold = params.get('dist_threshold')
+        labels = params.get('labels')
+        last_merges = params.get('last_merges')
+
+        plt.figure(figsize=(25, 10))
+        plt.ylabel('distance')
+
+        if last_merges:
+            plt.title('Hierarchical Clustering Dendrogram (truncated)')
+            plt.xlabel('cluster size')
+            ddata = hier.dendrogram(linkage_matrix,
+                                    leaf_rotation=90.,
+                                    leaf_font_size=8.,
+                                    show_leaf_counts=True,
+                                    labels=labels,
+                                    truncate_mode='lastp',
+                                    p=last_merges,
+                                    show_contracted=True)
+        else:
+            plt.title('Hierarchical Clustering Dendrogram')
+            if labels:
+                plt.xlabel('sample labels')
+            else:
+                plt.xlabel('sample index')
+            ddata = hier.dendrogram(linkage_matrix,
+                                    leaf_rotation=90.,
+                                    leaf_font_size=8.,
+                                    show_leaf_counts=True,
+                                    labels=labels)
+
+        self._add_distance(ddata)
+
+        if dist_threshold:
+            plt.axhline(y=dist_threshold, c='k')
+
+        plt.savefig(plot_file)
+        result_plots.append(plot_file)
+
+        returnVal = {'result_plots': result_plots}
 
         return returnVal

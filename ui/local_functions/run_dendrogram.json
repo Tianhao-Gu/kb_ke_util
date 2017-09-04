@@ -1,0 +1,16 @@
+{
+    "name" : "Run dendrogram",
+    "short_description" : "A wrapper method for scipy.cluster.hierarchy.dendrogram.",
+    "long_description" : "A wrapper method for scipy.cluster.hierarchy.dendrogram.",
+    "tags" : {
+        "categories" : ["KnowledgeEngine"],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": []
+        }
+    }
+}
