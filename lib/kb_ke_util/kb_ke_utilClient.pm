@@ -394,6 +394,104 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcl
     }
 }
  
+
+
+=head2 run_dendrogram
+
+  $returnVal = $obj->run_dendrogram($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.DendrogramParams
+$returnVal is a kb_ke_util.DendrogramOutput
+DendrogramParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_threshold has a value which is a float
+	labels has a value which is a reference to a list where each element is a string
+	last_merges has a value which is an int
+DendrogramOutput is a reference to a hash where the following keys are defined:
+	result_plots has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.DendrogramParams
+$returnVal is a kb_ke_util.DendrogramOutput
+DendrogramParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_threshold has a value which is a float
+	labels has a value which is a reference to a list where each element is a string
+	last_merges has a value which is an int
+DendrogramOutput is a reference to a hash where the following keys are defined:
+	result_plots has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+reference: 
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+
+=back
+
+=cut
+
+ sub run_dendrogram
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_dendrogram (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_dendrogram:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_dendrogram');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_dendrogram",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_dendrogram',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_dendrogram",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_dendrogram',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -437,16 +535,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'run_fcluster',
+                method_name => 'run_dendrogram',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method run_fcluster",
+            error => "Error invoking method run_dendrogram",
             status_line => $self->{client}->status_line,
-            method_name => 'run_fcluster',
+            method_name => 'run_dendrogram',
         );
     }
 }
@@ -774,6 +872,90 @@ flat_cluster has a value which is a reference to a hash where the key is a strin
 
 a reference to a hash where the following keys are defined:
 flat_cluster has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 DendrogramParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_dendrogram function
+linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+
+Optional arguments:
+dist_threshold - the threshold to apply when forming flat clusters (draw a horizontal line to dendrogram)
+labels - items corresponding to each linkage_matrix element 
+         (If labels are given, result dendrogram x-axis will be mapped to element in labels.)
+last_merges - show only last given value merged clusters
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_threshold has a value which is a float
+labels has a value which is a reference to a list where each element is a string
+last_merges has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_threshold has a value which is a float
+labels has a value which is a reference to a list where each element is a string
+last_merges has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 DendrogramOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_dendrogram function
+result_plots - List of result plot path(s)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+result_plots has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+result_plots has a value which is a reference to a list where each element is a string
 
 
 =end text

@@ -222,6 +222,26 @@ public class KbKeUtilClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: run_dendrogram</p>
+     * <pre>
+     * run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+     * reference: 
+     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.DendrogramParams DendrogramParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.DendrogramOutput DendrogramOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public DendrogramOutput runDendrogram(DendrogramParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<DendrogramOutput>> retType = new TypeReference<List<DendrogramOutput>>() {};
+        List<DendrogramOutput> res = caller.jsonrpcCall("kb_ke_util.run_dendrogram", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};

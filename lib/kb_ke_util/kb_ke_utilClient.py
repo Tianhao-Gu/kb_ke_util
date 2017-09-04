@@ -123,6 +123,30 @@ class kb_ke_util(object):
             'kb_ke_util.run_fcluster',
             [params], self._service_ver, context)
 
+    def run_dendrogram(self, params, context=None):
+        """
+        run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
+        reference: 
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+        :param params: instance of type "DendrogramParams" (Input of the
+           run_dendrogram function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) Optional arguments:
+           dist_threshold - the threshold to apply when forming flat clusters
+           (draw a horizontal line to dendrogram) labels - items
+           corresponding to each linkage_matrix element (If labels are given,
+           result dendrogram x-axis will be mapped to element in labels.)
+           last_merges - show only last given value merged clusters) ->
+           structure: parameter "linkage_matrix" of list of list of String,
+           parameter "dist_threshold" of Double, parameter "labels" of list
+           of String, parameter "last_merges" of Long
+        :returns: instance of type "DendrogramOutput" (Ouput of the
+           run_dendrogram function result_plots - List of result plot
+           path(s)) -> structure: parameter "result_plots" of list of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.run_dendrogram',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('kb_ke_util.status',
                                         [], self._service_ver, context)
