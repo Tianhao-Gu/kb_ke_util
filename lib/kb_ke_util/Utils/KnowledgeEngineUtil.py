@@ -250,8 +250,7 @@ class KnowledgeEngineUtil:
         labels - item name corresponding to each square_dist_matrix element
         """
 
-        log('--->\nrunning run_pdist\n' +
-            'params:\n{}'.format(json.dumps(params, indent=1)))
+        log('--->\nrunning run_pdist\n')
 
         self._validate_run_pdist_params(params)
 
@@ -290,8 +289,7 @@ class KnowledgeEngineUtil:
         linkage_matrix - The hierarchical clustering encoded as a linkage matrix
         """
 
-        log('--->\nrunning run_linkage\n' +
-            'params:\n{}'.format(json.dumps(params, indent=1)))
+        log('--->\nrunning run_linkage\n')
 
         self._validate_run_linkage_params(params)
 
@@ -300,7 +298,7 @@ class KnowledgeEngineUtil:
         if not method:
             method = 'ward'
 
-        linkage_matrix = hier.linkage(square_dist_matrix, method=method).tolist()
+        linkage_matrix = hier.linkage(square_dist_matrix, method=str(method)).tolist()
 
         returnVal = {'linkage_matrix': linkage_matrix}
 
@@ -332,8 +330,7 @@ class KnowledgeEngineUtil:
                       (If labels is none, element position array is returned to each cluster group)
         """
 
-        log('--->\nrunning run_fcluster\n' +
-            'params:\n{}'.format(json.dumps(params, indent=1)))
+        log('--->\nrunning run_fcluster\n')
 
         self._validate_run_fcluster_params(params)
 
@@ -374,8 +371,7 @@ class KnowledgeEngineUtil:
         result_plots - List of result plot path(s)
         """
 
-        log('--->\nrunning run_dendrogram\n' +
-            'params:\n{}'.format(json.dumps(params, indent=1)))
+        log('--->\nrunning run_dendrogram\n')
 
         self._validate_run_dendrogram_params(params)
 
