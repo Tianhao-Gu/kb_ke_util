@@ -102,7 +102,7 @@ class kb_ke_util(object):
            labels - items corresponding to each linkage_matrix element (If
            labels are given, result flat_cluster will be mapped to element in
            labels.) criterion - The criterion to use in forming flat
-           clusters. Default set to 'inconsistent'. The criterion can be
+           clusters. Default set to 'distance'. The criterion can be
            ["inconsistent", "distance", "maxclust"] Note: Advanced criterion
            'monocrit', 'maxclust_monocrit' in
            scipy.cluster.hierarchy.fcluster library are not implemented

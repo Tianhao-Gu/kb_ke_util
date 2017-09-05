@@ -316,7 +316,7 @@ class KnowledgeEngineUtil:
         Optional arguments:
         labels - items corresponding to each linkage_matrix element 
                  (If labels are given, result flat_cluster will be mapped to element in labels.)
-        criterion - The criterion to use in forming flat clusters. Default set to 'inconsistent'.
+        criterion - The criterion to use in forming flat clusters. Default set to 'distance'.
                     The criterion can be 
                     ["inconsistent", "distance", "maxclust"]
                     Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
@@ -338,7 +338,7 @@ class KnowledgeEngineUtil:
         dist_threshold = params.get('dist_threshold')
         criterion = params.get('criterion')
         if not criterion:
-            criterion = 'inconsistent'
+            criterion = 'distance'
         labels = params.get('labels')
 
         fcluster = hier.fcluster(linkage_matrix, dist_threshold, criterion=criterion)

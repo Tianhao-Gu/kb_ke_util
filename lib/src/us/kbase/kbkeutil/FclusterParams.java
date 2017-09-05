@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * Optional arguments:
  * labels - items corresponding to each linkage_matrix element 
  *          (If labels are given, result flat_cluster will be mapped to element in labels.)
- * criterion - The criterion to use in forming flat clusters. Default set to 'inconsistent'.
+ * criterion - The criterion to use in forming flat clusters. Default set to 'distance'.
  *             The criterion can be 
  *             ["inconsistent", "distance", "maxclust"]
  *             Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
