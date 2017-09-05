@@ -104,7 +104,7 @@ class KnowledgeEngineUtil:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
-        # check method validation
+        # check criterion validation
         criterion = params.get('criterion')
         if criterion and criterion not in self.CRITERION:
             error_msg = 'INPUT ERROR:\nInput criterion [{}] is not valid.\n'.format(criterion)
@@ -264,7 +264,7 @@ class KnowledgeEngineUtil:
 
         data = self._get_data(data_matrix)
         dist_matrix = dist.pdist(data, metric=metric)
-        square_dist_matrix = dist.squareform(dist_matrix)
+        square_dist_matrix = dist.squareform(dist_matrix).tolist()
 
         returnVal = {'square_dist_matrix': square_dist_matrix,
                      'labels': labels}
@@ -300,7 +300,7 @@ class KnowledgeEngineUtil:
         if not method:
             method = 'ward'
 
-        linkage_matrix = hier.linkage(square_dist_matrix, method=method)
+        linkage_matrix = hier.linkage(square_dist_matrix, method=method).tolist()
 
         returnVal = {'linkage_matrix': linkage_matrix}
 
