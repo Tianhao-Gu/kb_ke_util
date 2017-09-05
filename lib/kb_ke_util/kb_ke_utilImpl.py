@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "e5b5f00fb7d3cd13888945c05626d5789c4f1f2d"
+    GIT_COMMIT_HASH = "3c36904d9c8d9ab1dd1f41e0371222398fc0fddd"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -137,7 +137,7 @@ class kb_ke_util:
            labels - items corresponding to each linkage_matrix element (If
            labels are given, result flat_cluster will be mapped to element in
            labels.) criterion - The criterion to use in forming flat
-           clusters. Default set to 'inconsistent'. The criterion can be
+           clusters. Default set to 'distance'. The criterion can be
            ["inconsistent", "distance", "maxclust"] Note: Advanced criterion
            'monocrit', 'maxclust_monocrit' in
            scipy.cluster.hierarchy.fcluster library are not implemented
