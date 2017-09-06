@@ -122,10 +122,10 @@ sub new
 $params is a kb_ke_util.PdistParams
 $returnVal is a kb_ke_util.PdistOutput
 PdistParams is a reference to a hash where the following keys are defined:
-	data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+	dist_matrix has a value which is a reference to a hash where the key is a string and the value is a string
 	metric has a value which is a string
 PdistOutput is a reference to a hash where the following keys are defined:
-	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 	labels has a value which is a reference to a list where each element is a string
 
 </pre>
@@ -137,10 +137,10 @@ PdistOutput is a reference to a hash where the following keys are defined:
 $params is a kb_ke_util.PdistParams
 $returnVal is a kb_ke_util.PdistOutput
 PdistParams is a reference to a hash where the following keys are defined:
-	data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+	dist_matrix has a value which is a reference to a hash where the key is a string and the value is a string
 	metric has a value which is a string
 PdistOutput is a reference to a hash where the following keys are defined:
-	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 	labels has a value which is a reference to a list where each element is a string
 
 
@@ -218,7 +218,7 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdis
 $params is a kb_ke_util.LinkageParams
 $returnVal is a kb_ke_util.LinkageOutput
 LinkageParams is a reference to a hash where the following keys are defined:
-	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 	method has a value which is a string
 LinkageOutput is a reference to a hash where the following keys are defined:
 	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
@@ -232,7 +232,7 @@ LinkageOutput is a reference to a hash where the following keys are defined:
 $params is a kb_ke_util.LinkageParams
 $returnVal is a kb_ke_util.LinkageOutput
 LinkageParams is a reference to a hash where the following keys are defined:
-	square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+	dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 	method has a value which is a string
 LinkageOutput is a reference to a hash where the following keys are defined:
 	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
@@ -647,7 +647,7 @@ Note: Advanced metric functions 'minkowski', 'seuclidean' and 'mahalanobis' incl
 
 <pre>
 a reference to a hash where the following keys are defined:
-data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+dist_matrix has a value which is a reference to a hash where the key is a string and the value is a string
 metric has a value which is a string
 
 </pre>
@@ -657,7 +657,7 @@ metric has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-data_matrix has a value which is a reference to a hash where the key is a string and the value is a string
+dist_matrix has a value which is a reference to a hash where the key is a string and the value is a string
 metric has a value which is a string
 
 
@@ -676,9 +676,8 @@ metric has a value which is a string
 =item Description
 
 Ouput of the run_pdist function
-square_dist_matrix - square form of distance matrix where the data is mirrored across 
-                     the diagonal
-labels - item name corresponding to each square_dist_matrix element
+dist_matrix - distance matrix where the data is mirrored across the diagonal
+labels - item name corresponding to each dist_matrix element
 
 
 =item Definition
@@ -687,7 +686,7 @@ labels - item name corresponding to each square_dist_matrix element
 
 <pre>
 a reference to a hash where the following keys are defined:
-square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 labels has a value which is a reference to a list where each element is a string
 
 </pre>
@@ -697,7 +696,7 @@ labels has a value which is a reference to a list where each element is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 labels has a value which is a reference to a list where each element is a string
 
 
@@ -716,7 +715,7 @@ labels has a value which is a reference to a list where each element is a string
 =item Description
 
 Input of the run_linkage function
-square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+dist_matrix - distance matrix (refer to run_pdist return)
 
 Optional arguments:
 method - The linkage algorithm to use. Default set to 'ward'.
@@ -732,7 +731,7 @@ method - The linkage algorithm to use. Default set to 'ward'.
 
 <pre>
 a reference to a hash where the following keys are defined:
-square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 method has a value which is a string
 
 </pre>
@@ -742,7 +741,7 @@ method has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-square_dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
+dist_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a string
 method has a value which is a string
 
 

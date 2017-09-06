@@ -113,7 +113,7 @@ class kb_ke_utilTest(unittest.TestCase):
             self.assertEqual(error, str(context.exception.message))
 
     def check_run_pdist_output(self, ret):
-        self.assertTrue('square_dist_matrix' in ret)
+        self.assertTrue('dist_matrix' in ret)
         self.assertTrue('labels' in ret)
 
     def check_run_linkage_output(self, ret):
@@ -164,21 +164,21 @@ class kb_ke_utilTest(unittest.TestCase):
 
     def test_bad_run_linkage_params(self):
         self.start_test()
-        invalidate_params = {'missing_square_dist_matrix': 'square_dist_matrix'}
-        error_msg = '"square_dist_matrix" parameter is required, but missing'
+        invalidate_params = {'missing_dist_matrix': 'dist_matrix'}
+        error_msg = '"dist_matrix" parameter is required, but missing'
         self.fail_run_linkage(invalidate_params, error_msg)
 
-        invalidate_params = {'square_dist_matrix': 'square_dist_matrix',
+        invalidate_params = {'dist_matrix': 'dist_matrix',
                              'method': 'invalidate_method'}
         error_msg = "INPUT ERROR:\nInput linkage algorithm [invalidate_method] is not valid.\n"
         self.fail_run_linkage(invalidate_params, error_msg, contains=True)
 
     def test_run_linkage(self):
         self.start_test()
-        square_dist_matrix = [[0, 0.34641016, 0.69282032],
+        dist_matrix = [[0, 0.34641016, 0.69282032],
                               [0.34641016, 0, 0.34641016],
                               [0.69282032, 0.34641016, 0]]
-        params = {'square_dist_matrix': square_dist_matrix}
+        params = {'dist_matrix': dist_matrix}
         ret = self.getImpl().run_linkage(self.ctx, params)[0]
         self.check_run_linkage_output(ret)
 

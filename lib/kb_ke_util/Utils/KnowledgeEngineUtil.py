@@ -80,7 +80,7 @@ class KnowledgeEngineUtil:
         log('start validating run_linkage params')
 
         # check for required parameters
-        for p in ['square_dist_matrix']:
+        for p in ['dist_matrix']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
@@ -245,9 +245,8 @@ class KnowledgeEngineUtil:
               scipy.spatial.distance.pdist library are not implemented
 
         return:
-        square_dist_matrix - square form of distance matrix where the data is mirrored across 
-                             the diagonal
-        labels - item name corresponding to each square_dist_matrix element
+        dist_matrix - distance matrix where the data is mirrored across the diagonal
+        labels - item name corresponding to each dist_matrix element
         """
 
         log('--->\nrunning run_pdist\n')
@@ -262,10 +261,10 @@ class KnowledgeEngineUtil:
         labels = data_matrix.get('row_ids')
 
         data = self._get_data(data_matrix)
-        dist_matrix = dist.pdist(data, metric=metric)
-        square_dist_matrix = dist.squareform(dist_matrix).tolist()
+        dist_matrix = dist.pdist(data, metric=metric).tolist()
+        # square_dist_matrix = dist.squareform(dist_matrix).tolist()
 
-        returnVal = {'square_dist_matrix': square_dist_matrix,
+        returnVal = {'dist_matrix': dist_matrix,
                      'labels': labels}
 
         return returnVal
@@ -276,7 +275,7 @@ class KnowledgeEngineUtil:
         reference:
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
 
-        square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+        dist_matrix - distance matrix (refer to run_pdist return)
 
         Optional arguments:
         method - The linkage algorithm to use. Default set to 'ward'.
@@ -293,12 +292,12 @@ class KnowledgeEngineUtil:
 
         self._validate_run_linkage_params(params)
 
-        square_dist_matrix = params.get('square_dist_matrix')
+        dist_matrix = params.get('dist_matrix')
         method = params.get('method')
         if not method:
             method = 'ward'
 
-        linkage_matrix = hier.linkage(square_dist_matrix, method=str(method)).tolist()
+        linkage_matrix = hier.linkage(dist_matrix, method=str(method)).tolist()
 
         returnVal = {'linkage_matrix': linkage_matrix}
 

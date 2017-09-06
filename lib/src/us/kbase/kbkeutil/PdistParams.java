@@ -36,29 +36,29 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "data_matrix",
+    "dist_matrix",
     "metric"
 })
 public class PdistParams {
 
-    @JsonProperty("data_matrix")
-    private Map<String, String> dataMatrix;
+    @JsonProperty("dist_matrix")
+    private Map<String, String> distMatrix;
     @JsonProperty("metric")
     private java.lang.String metric;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
-    @JsonProperty("data_matrix")
-    public Map<String, String> getDataMatrix() {
-        return dataMatrix;
+    @JsonProperty("dist_matrix")
+    public Map<String, String> getDistMatrix() {
+        return distMatrix;
     }
 
-    @JsonProperty("data_matrix")
-    public void setDataMatrix(Map<String, String> dataMatrix) {
-        this.dataMatrix = dataMatrix;
+    @JsonProperty("dist_matrix")
+    public void setDistMatrix(Map<String, String> distMatrix) {
+        this.distMatrix = distMatrix;
     }
 
-    public PdistParams withDataMatrix(Map<String, String> dataMatrix) {
-        this.dataMatrix = dataMatrix;
+    public PdistParams withDistMatrix(Map<String, String> distMatrix) {
+        this.distMatrix = distMatrix;
         return this;
     }
 
@@ -89,7 +89,7 @@ public class PdistParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((("PdistParams"+" [dataMatrix=")+ dataMatrix)+", metric=")+ metric)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((("PdistParams"+" [distMatrix=")+ distMatrix)+", metric=")+ metric)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
