@@ -29,16 +29,17 @@ module kb_ke_util {
           scipy.spatial.distance.pdist library are not implemented
   */
   typedef structure {
-    mapping<string, string> dist_matrix;
+    mapping<string, string> data_matrix;
     string metric;
   } PdistParams;
 
   /* Ouput of the run_pdist function
-    dist_matrix - distance matrix where the data is mirrored across the diagonal
-    labels - item name corresponding to each dist_matrix element
+    square_dist_matrix - square form of distance matrix where the data is mirrored across 
+                         the diagonal
+    labels - item name corresponding to each square_dist_matrix element
   */
   typedef structure {
-    list<list<string>> dist_matrix;
+    list<list<string>> square_dist_matrix;
     list<string> labels;
   } PdistOutput;
 
@@ -48,7 +49,7 @@ module kb_ke_util {
   funcdef run_pdist(PdistParams params) returns(PdistOutput returnVal) authentication required;
 
   /* Input of the run_linkage function
-    dist_matrix - distance matrix (refer to run_pdist return)
+    square_dist_matrix - square form of distance matrix (refer to run_pdist return)
 
     Optional arguments:
     method - The linkage algorithm to use. Default set to 'ward'.
@@ -58,7 +59,7 @@ module kb_ke_util {
              https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
   */
   typedef structure {
-    list<list<string>> dist_matrix;
+    list<list<string>> square_dist_matrix;
     string method;
   } LinkageParams;
 
