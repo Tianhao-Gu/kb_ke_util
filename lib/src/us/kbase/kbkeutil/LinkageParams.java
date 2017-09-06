@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: LinkageParams</p>
  * <pre>
  * Input of the run_linkage function
- * square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+ * dist_matrix - distance matrix (refer to run_pdist return)
  * Optional arguments:
  * method - The linkage algorithm to use. Default set to 'ward'.
  *          The method can be 
@@ -29,29 +29,29 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "square_dist_matrix",
+    "dist_matrix",
     "method"
 })
 public class LinkageParams {
 
-    @JsonProperty("square_dist_matrix")
-    private List<List<String>> squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    private List<List<String>> distMatrix;
     @JsonProperty("method")
     private java.lang.String method;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
-    @JsonProperty("square_dist_matrix")
-    public List<List<String>> getSquareDistMatrix() {
-        return squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public List<List<String>> getDistMatrix() {
+        return distMatrix;
     }
 
-    @JsonProperty("square_dist_matrix")
-    public void setSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public void setDistMatrix(List<List<String>> distMatrix) {
+        this.distMatrix = distMatrix;
     }
 
-    public LinkageParams withSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    public LinkageParams withDistMatrix(List<List<String>> distMatrix) {
+        this.distMatrix = distMatrix;
         return this;
     }
 
@@ -82,7 +82,7 @@ public class LinkageParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((("LinkageParams"+" [squareDistMatrix=")+ squareDistMatrix)+", method=")+ method)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((("LinkageParams"+" [distMatrix=")+ distMatrix)+", method=")+ method)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
