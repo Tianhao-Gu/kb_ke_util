@@ -178,6 +178,8 @@ class KnowledgeEngineUtil:
                            if labels is none, return element pos array in each cluster group
         """
 
+        log('start assigning labels to clusters')
+
         flat_cluster = {}
         for pos, element in enumerate(fcluster):
             cluster_name = str(element)
@@ -204,6 +206,9 @@ class KnowledgeEngineUtil:
         Author: Jorn Hees
         https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/#Eye-Candy
         """
+
+        log('start adding distance to dendrogram')
+
         annotate_above = 10  # useful in small plots so annotations don't overlap
         for i, d, c in zip(ddata['icoord'], ddata['dcoord'], ddata['color_list']):
             x = 0.5 * sum(i[1:3])
@@ -262,7 +267,9 @@ class KnowledgeEngineUtil:
         labels = data_matrix.get('row_ids')
 
         data = self._get_data(data_matrix)
+        log('start computing distance matrix')
         dist_matrix = dist.pdist(data, metric=metric)
+        log('start transforming the distance matrix to square form')
         square_dist_matrix = dist.squareform(dist_matrix).tolist()
 
         returnVal = {'square_dist_matrix': square_dist_matrix,
@@ -298,6 +305,7 @@ class KnowledgeEngineUtil:
         if not method:
             method = 'ward'
 
+        log('start computing linkage matrix')
         linkage_matrix = hier.linkage(square_dist_matrix, method=str(method)).tolist()
 
         returnVal = {'linkage_matrix': linkage_matrix}
@@ -341,6 +349,7 @@ class KnowledgeEngineUtil:
             criterion = 'distance'
         labels = params.get('labels')
 
+        log('start computing flat clusters')
         fcluster = hier.fcluster(linkage_matrix, dist_threshold, criterion=criterion)
 
         if labels:
