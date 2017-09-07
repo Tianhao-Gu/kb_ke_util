@@ -28,36 +28,36 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class LinkageOutput {
 
     @JsonProperty("linkage_matrix")
-    private List<List<String>> linkageMatrix;
-    private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
+    private List<List<Double>> linkageMatrix;
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("linkage_matrix")
-    public List<List<String>> getLinkageMatrix() {
+    public List<List<Double>> getLinkageMatrix() {
         return linkageMatrix;
     }
 
     @JsonProperty("linkage_matrix")
-    public void setLinkageMatrix(List<List<String>> linkageMatrix) {
+    public void setLinkageMatrix(List<List<Double>> linkageMatrix) {
         this.linkageMatrix = linkageMatrix;
     }
 
-    public LinkageOutput withLinkageMatrix(List<List<String>> linkageMatrix) {
+    public LinkageOutput withLinkageMatrix(List<List<Double>> linkageMatrix) {
         this.linkageMatrix = linkageMatrix;
         return this;
     }
 
     @JsonAnyGetter
-    public Map<java.lang.String, Object> getAdditionalProperties() {
+    public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
     @JsonAnySetter
-    public void setAdditionalProperties(java.lang.String name, Object value) {
+    public void setAdditionalProperties(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
 
     @Override
-    public java.lang.String toString() {
+    public String toString() {
         return ((((("LinkageOutput"+" [linkageMatrix=")+ linkageMatrix)+", additionalProperties=")+ additionalProperties)+"]");
     }
 

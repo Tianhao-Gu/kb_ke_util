@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "674ae5e9e7eb31d7c4894a3efff154c448ff42e4"
+    GIT_COMMIT_HASH = "130cd55315bef52e971cd0d341e9dd4302911deb"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -59,14 +59,13 @@ class kb_ke_util:
            distance.pdist.html Note: Advanced metric functions 'minkowski',
            'seuclidean' and 'mahalanobis' included in
            scipy.spatial.distance.pdist library are not implemented) ->
-           structure: parameter "data_matrix" of mapping from String to
-           String, parameter "metric" of String
+           structure: parameter "data_matrix" of mapping from String to list
+           of String, parameter "metric" of String
         :returns: instance of type "PdistOutput" (Ouput of the run_pdist
-           function square_dist_matrix - square form of distance matrix where
-           the data is mirrored across the diagonal labels - item name
-           corresponding to each square_dist_matrix element) -> structure:
-           parameter "square_dist_matrix" of list of list of String,
-           parameter "labels" of list of String
+           function dist_matrix - 1D distance matrix labels - item name
+           corresponding to each dist_matrix element) -> structure: parameter
+           "dist_matrix" of list of Double, parameter "labels" of list of
+           String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -93,19 +92,18 @@ class kb_ke_util:
         reference: 
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
         :param params: instance of type "LinkageParams" (Input of the
-           run_linkage function square_dist_matrix - square form of distance
-           matrix (refer to run_pdist return) Optional arguments: method -
-           The linkage algorithm to use. Default set to 'ward'. The method
-           can be ["single", "complete", "average", "weighted", "centroid",
+           run_linkage function dist_matrix - 1D distance matrix (refer to
+           run_pdist return) Optional arguments: method - The linkage
+           algorithm to use. Default set to 'ward'. The method can be
+           ["single", "complete", "average", "weighted", "centroid",
            "median", "ward"] Details refer to:
            https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
-           hierarchy.linkage.html) -> structure: parameter
-           "square_dist_matrix" of list of list of String, parameter "method"
-           of String
+           hierarchy.linkage.html) -> structure: parameter "dist_matrix" of
+           list of Double, parameter "method" of String
         :returns: instance of type "LinkageOutput" (Ouput of the run_linkage
            function linkage_matrix - The hierarchical clustering encoded as a
            linkage matrix) -> structure: parameter "linkage_matrix" of list
-           of list of String
+           of list of Double
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -144,7 +142,7 @@ class kb_ke_util:
            Details refer to:
            https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
            hierarchy.fcluster.html) -> structure: parameter "linkage_matrix"
-           of list of list of String, parameter "dist_threshold" of Double,
+           of list of list of Double, parameter "dist_threshold" of Double,
            parameter "labels" of list of String, parameter "criterion" of
            String
         :returns: instance of type "FclusterOutput" (Ouput of the

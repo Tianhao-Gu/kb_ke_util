@@ -23,6 +23,8 @@ RUN pip install cffi --upgrade \
 
 # -----------------------------------------
 
+RUN pip install --upgrade scipy
+
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module

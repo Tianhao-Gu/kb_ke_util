@@ -29,17 +29,16 @@ module kb_ke_util {
           scipy.spatial.distance.pdist library are not implemented
   */
   typedef structure {
-    mapping<string, string> data_matrix;
+    mapping<string, list<string>> data_matrix;
     string metric;
   } PdistParams;
 
   /* Ouput of the run_pdist function
-    square_dist_matrix - square form of distance matrix where the data is mirrored across 
-                         the diagonal
-    labels - item name corresponding to each square_dist_matrix element
+    dist_matrix - 1D distance matrix
+    labels - item name corresponding to each dist_matrix element
   */
   typedef structure {
-    list<list<string>> square_dist_matrix;
+    list<float> dist_matrix;
     list<string> labels;
   } PdistOutput;
 
@@ -49,7 +48,7 @@ module kb_ke_util {
   funcdef run_pdist(PdistParams params) returns(PdistOutput returnVal) authentication required;
 
   /* Input of the run_linkage function
-    square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+    dist_matrix - 1D distance matrix (refer to run_pdist return)
 
     Optional arguments:
     method - The linkage algorithm to use. Default set to 'ward'.
@@ -59,7 +58,7 @@ module kb_ke_util {
              https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
   */
   typedef structure {
-    list<list<string>> square_dist_matrix;
+    list<float> dist_matrix;
     string method;
   } LinkageParams;
 
@@ -67,7 +66,7 @@ module kb_ke_util {
     linkage_matrix - The hierarchical clustering encoded as a linkage matrix
   */
   typedef structure {
-    list<list<string>> linkage_matrix;
+    list<list<float>> linkage_matrix;
   } LinkageOutput;
 
   /* run_linkage: a wrapper method for scipy.cluster.hierarchy.linkage
@@ -92,7 +91,7 @@ module kb_ke_util {
                 https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
   */
   typedef structure {
-    list<list<string>> linkage_matrix;
+    list<list<float>> linkage_matrix;
     float dist_threshold;
     list<string> labels;
     string criterion;
