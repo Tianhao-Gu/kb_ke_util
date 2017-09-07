@@ -42,9 +42,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class FclusterParams {
 
     @JsonProperty("linkage_matrix")
-    private List<List<String>> linkageMatrix;
+    private List<List<Double>> linkageMatrix;
     @JsonProperty("dist_threshold")
-    private Double distThreshold;
+    private java.lang.Double distThreshold;
     @JsonProperty("labels")
     private List<String> labels;
     @JsonProperty("criterion")
@@ -52,31 +52,31 @@ public class FclusterParams {
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("linkage_matrix")
-    public List<List<String>> getLinkageMatrix() {
+    public List<List<Double>> getLinkageMatrix() {
         return linkageMatrix;
     }
 
     @JsonProperty("linkage_matrix")
-    public void setLinkageMatrix(List<List<String>> linkageMatrix) {
+    public void setLinkageMatrix(List<List<Double>> linkageMatrix) {
         this.linkageMatrix = linkageMatrix;
     }
 
-    public FclusterParams withLinkageMatrix(List<List<String>> linkageMatrix) {
+    public FclusterParams withLinkageMatrix(List<List<Double>> linkageMatrix) {
         this.linkageMatrix = linkageMatrix;
         return this;
     }
 
     @JsonProperty("dist_threshold")
-    public Double getDistThreshold() {
+    public java.lang.Double getDistThreshold() {
         return distThreshold;
     }
 
     @JsonProperty("dist_threshold")
-    public void setDistThreshold(Double distThreshold) {
+    public void setDistThreshold(java.lang.Double distThreshold) {
         this.distThreshold = distThreshold;
     }
 
-    public FclusterParams withDistThreshold(Double distThreshold) {
+    public FclusterParams withDistThreshold(java.lang.Double distThreshold) {
         this.distThreshold = distThreshold;
         return this;
     }

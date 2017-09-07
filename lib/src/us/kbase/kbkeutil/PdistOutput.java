@@ -16,38 +16,37 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: PdistOutput</p>
  * <pre>
  * Ouput of the run_pdist function
- * square_dist_matrix - square form of distance matrix where the data is mirrored across 
- *                      the diagonal
- * labels - item name corresponding to each square_dist_matrix element
+ * dist_matrix - 1D distance matrix
+ * labels - item name corresponding to each dist_matrix element
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "square_dist_matrix",
+    "dist_matrix",
     "labels"
 })
 public class PdistOutput {
 
-    @JsonProperty("square_dist_matrix")
-    private List<List<String>> squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    private List<Double> distMatrix;
     @JsonProperty("labels")
     private List<String> labels;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
-    @JsonProperty("square_dist_matrix")
-    public List<List<String>> getSquareDistMatrix() {
-        return squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public List<Double> getDistMatrix() {
+        return distMatrix;
     }
 
-    @JsonProperty("square_dist_matrix")
-    public void setSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public void setDistMatrix(List<Double> distMatrix) {
+        this.distMatrix = distMatrix;
     }
 
-    public PdistOutput withSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    public PdistOutput withDistMatrix(List<Double> distMatrix) {
+        this.distMatrix = distMatrix;
         return this;
     }
 
@@ -78,7 +77,7 @@ public class PdistOutput {
 
     @Override
     public java.lang.String toString() {
-        return ((((((("PdistOutput"+" [squareDistMatrix=")+ squareDistMatrix)+", labels=")+ labels)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((("PdistOutput"+" [distMatrix=")+ distMatrix)+", labels=")+ labels)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

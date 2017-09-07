@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: LinkageParams</p>
  * <pre>
  * Input of the run_linkage function
- * square_dist_matrix - square form of distance matrix (refer to run_pdist return)
+ * dist_matrix - 1D distance matrix (refer to run_pdist return)
  * Optional arguments:
  * method - The linkage algorithm to use. Default set to 'ward'.
  *          The method can be 
@@ -29,60 +29,60 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "square_dist_matrix",
+    "dist_matrix",
     "method"
 })
 public class LinkageParams {
 
-    @JsonProperty("square_dist_matrix")
-    private List<List<String>> squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    private List<Double> distMatrix;
     @JsonProperty("method")
-    private java.lang.String method;
-    private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
+    private String method;
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("square_dist_matrix")
-    public List<List<String>> getSquareDistMatrix() {
-        return squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public List<Double> getDistMatrix() {
+        return distMatrix;
     }
 
-    @JsonProperty("square_dist_matrix")
-    public void setSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    @JsonProperty("dist_matrix")
+    public void setDistMatrix(List<Double> distMatrix) {
+        this.distMatrix = distMatrix;
     }
 
-    public LinkageParams withSquareDistMatrix(List<List<String>> squareDistMatrix) {
-        this.squareDistMatrix = squareDistMatrix;
+    public LinkageParams withDistMatrix(List<Double> distMatrix) {
+        this.distMatrix = distMatrix;
         return this;
     }
 
     @JsonProperty("method")
-    public java.lang.String getMethod() {
+    public String getMethod() {
         return method;
     }
 
     @JsonProperty("method")
-    public void setMethod(java.lang.String method) {
+    public void setMethod(String method) {
         this.method = method;
     }
 
-    public LinkageParams withMethod(java.lang.String method) {
+    public LinkageParams withMethod(String method) {
         this.method = method;
         return this;
     }
 
     @JsonAnyGetter
-    public Map<java.lang.String, Object> getAdditionalProperties() {
+    public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
     @JsonAnySetter
-    public void setAdditionalProperties(java.lang.String name, Object value) {
+    public void setAdditionalProperties(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
 
     @Override
-    public java.lang.String toString() {
-        return ((((((("LinkageParams"+" [squareDistMatrix=")+ squareDistMatrix)+", method=")+ method)+", additionalProperties=")+ additionalProperties)+"]");
+    public String toString() {
+        return ((((((("LinkageParams"+" [distMatrix=")+ distMatrix)+", method=")+ method)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

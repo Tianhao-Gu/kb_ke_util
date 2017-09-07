@@ -2,6 +2,7 @@
 package us.kbase.kbkeutil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -42,22 +43,22 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class PdistParams {
 
     @JsonProperty("data_matrix")
-    private Map<String, String> dataMatrix;
+    private Map<String, List<String>> dataMatrix;
     @JsonProperty("metric")
     private java.lang.String metric;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("data_matrix")
-    public Map<String, String> getDataMatrix() {
+    public Map<String, List<String>> getDataMatrix() {
         return dataMatrix;
     }
 
     @JsonProperty("data_matrix")
-    public void setDataMatrix(Map<String, String> dataMatrix) {
+    public void setDataMatrix(Map<String, List<String>> dataMatrix) {
         this.dataMatrix = dataMatrix;
     }
 
-    public PdistParams withDataMatrix(Map<String, String> dataMatrix) {
+    public PdistParams withDataMatrix(Map<String, List<String>> dataMatrix) {
         this.dataMatrix = dataMatrix;
         return this;
     }
