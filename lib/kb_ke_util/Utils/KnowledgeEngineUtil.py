@@ -1,5 +1,4 @@
 import time
-import json
 import numpy
 import os
 import errno
@@ -10,7 +9,8 @@ from matplotlib import pyplot as plt
 
 
 def log(message, prefix_newline=False):
-    print(('\n' if prefix_newline else '') + str(time.time()) + ': ' + message)
+    time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time()))
+    print(('\n' if prefix_newline else '') + time_str + ': ' + message)
 
 class KnowledgeEngineUtil:
 
