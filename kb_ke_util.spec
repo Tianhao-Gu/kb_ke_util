@@ -9,6 +9,13 @@ module kb_ke_util {
   */
   typedef int boolean;
 
+  /* An X/Y/Z style reference*/
+  typedef string obj_ref;
+
+  /***************
+  math layer
+  ***************/
+
   /* Input of the run_pdist function
     data_matrix - raw data matrix with row_ids, col_ids and values
                   e.g.{'row_ids': ['gene_1', 'gene_2'], 
@@ -138,5 +145,59 @@ module kb_ke_util {
      reference: 
      https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html*/
   funcdef run_dendrogram(DendrogramParams params) returns(DendrogramOutput returnVal) authentication required;
+
+  /***************
+  persistence layer
+  ***************/
+
+  /* Input of the build_biclusters function
+    ndarray_ref: NDArray object reference
+    dist_threshold: the threshold to apply when forming flat clusters
+
+    Optional arguments:
+    dist_metric: The distance metric to use. Default set to 'euclidean'.
+                 The distance function can be
+                 ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
+                  "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
+                  "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean", 
+                  "yule"]
+                 Details refer to:
+                 https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+
+    linkage_method: The linkage algorithm to use. Default set to 'ward'.
+                    The method can be
+                    ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
+                    Details refer to:
+                    https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+    fcluster_criterion: The criterion to use in forming flat clusters. Default set to 'distance'.
+                        The criterion can be
+                        ["inconsistent", "distance", "maxclust"]
+                        Details refer to:
+                        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+  */
+  typedef structure{
+      obj_ref ndarray_ref;
+      float dist_threshold;
+
+      string dist_metric;
+      string linkage_method;
+      string fcluster_criterion;
+  } BuildBiclustersParams;
+
+  /* Ouput of the build_biclusters function
+    shock_id_list: list of the id of the shock node where the zipped JSON biclustering info output is stored
+
+    JSON format:
+    ["gene_id_1", "gene_id_2", "gene_id_3"]
+  */
+  typedef structure {
+    list<string> shock_id_list;
+  } BuildBiclustersOutput;
+
+  /*
+  build_biclusters: build biclusters and store result feature sets as JSON into shock
+  */
+  funcdef build_biclusters(BuildBiclustersParams params) returns (BuildBiclustersOutput returnVal) authentication required;
 
 };

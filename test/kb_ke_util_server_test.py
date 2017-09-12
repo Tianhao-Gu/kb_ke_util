@@ -5,6 +5,8 @@ import json  # noqa: F401
 import time
 import requests  # noqa: F401
 import inspect
+import uuid
+
 
 from os import environ
 try:
@@ -18,13 +20,14 @@ from biokbase.workspace.client import Workspace as workspaceService
 from kb_ke_util.kb_ke_utilImpl import kb_ke_util
 from kb_ke_util.kb_ke_utilServer import MethodContext
 from kb_ke_util.authclient import KBaseAuth as _KBaseAuth
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 
 
 class kb_ke_utilTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        token = environ.get('KB_AUTH_TOKEN', None)
+        cls.token = environ.get('KB_AUTH_TOKEN', None)
         config_file = environ.get('KB_DEPLOYMENT_CONFIG', None)
         cls.cfg = {}
         config = ConfigParser()
@@ -34,11 +37,11 @@ class kb_ke_utilTest(unittest.TestCase):
         # Getting username from Auth profile for token
         authServiceUrl = cls.cfg['auth-service-url']
         auth_client = _KBaseAuth(authServiceUrl)
-        user_id = auth_client.get_user(token)
+        user_id = auth_client.get_user(cls.token)
         # WARNING: don't call any logging methods on the context object,
         # it'll result in a NoneType error
         cls.ctx = MethodContext(None)
-        cls.ctx.update({'token': token,
+        cls.ctx.update({'token': cls.token,
                         'user_id': user_id,
                         'provenance': [
                             {'service': 'kb_ke_util',
@@ -46,29 +49,87 @@ class kb_ke_utilTest(unittest.TestCase):
                              'method_params': []
                              }],
                         'authenticated': 1})
+        cls.shockURL = cls.cfg['shock-url']
         cls.wsURL = cls.cfg['workspace-url']
         cls.wsClient = workspaceService(cls.wsURL)
         cls.serviceImpl = kb_ke_util(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
+        cls.dfu = DataFileUtil(cls.callback_url)
+
+        suffix = int(time.time() * 1000)
+        cls.wsName = "test_kb_ke_apps_" + str(suffix)
+        cls.wsClient.create_workspace({'workspace': cls.wsName})
+
+        cls.nodes_to_delete = []
+        cls.prepare_data()
+
     @classmethod
     def tearDownClass(cls):
         if hasattr(cls, 'wsName'):
             cls.wsClient.delete_workspace({'workspace': cls.wsName})
             print('Test workspace was deleted')
+        if hasattr(cls, 'nodes_to_delete'):
+            for node in cls.nodes_to_delete:
+                cls.delete_shock_node(node)
+
+    @classmethod
+    def delete_shock_node(cls, node_id):
+        header = {'Authorization': 'Oauth {0}'.format(cls.token)}
+        requests.delete(cls.shockURL + '/node/' + node_id, headers=header,
+                        allow_redirects=True)
+        print('Deleted shock node ' + node_id)
+
+    @classmethod
+    def prepare_data(cls):
+        # upload ndarray object
+        workspace_id = cls.dfu.ws_name_to_id(cls.wsName)
+        object_type = 'KBaseGenerics.NDArray'
+        ndarray_object_name = 'test_ndarray'
+        ndarray_data = {'dim_context': [{'typed_values': [{'values': {'scalar_type': 'string',
+                                                                      'string_values': ['gene_id_1', 
+                                                                                        'gene_id_2', 
+                                                                                        'gene_id_3']},
+                                                           'value_type': {'term_name': 'gene ids'}}],
+                                         'size': 3,
+                                         'data_type': {'term_name': 'gene ids'}},
+                                        {'typed_values': [{'values': {'scalar_type': 'string',
+                                                                      'string_values': ['condition_1', 
+                                                                                        'condition_2', 
+                                                                                        'condition_3', 
+                                                                                        'condition_4']},
+                                                           'value_type': {'term_name': 'conditions'}}],
+                                         'size': 4,
+                                         'data_type': {'term_name': 'conditions'}}],
+                        'typed_values': {'values': {'scalar_type': 'float',
+                                                    'float_values': [0.1, 0.2, 0.3, 0.4,
+                                                                     0.3, 0.4, 0.5, 0.6,
+                                                                     0.5, 0.6, 0.7, 0.8]},
+                                         'value_type': {'term_name': 'data values'}},
+                        'name': 'test_name',
+                        'description': 'test_ndarray',
+                        'data_type': {'term_name': 'test ndarray'},
+                        'n_dimensions': 2}
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{'type': object_type,
+                         'data': ndarray_data,
+                         'name': ndarray_object_name}]
+        }
+
+        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
+        cls.ndarray_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        # ci env object
+        # cls.ndarray_ref = '25791/3/49'
+        # cls.ndarray_ref = '25791/2/3'
 
     def getWsClient(self):
         return self.__class__.wsClient
 
     def getWsName(self):
-        if hasattr(self.__class__, 'wsName'):
-            return self.__class__.wsName
-        suffix = int(time.time() * 1000)
-        wsName = "test_kb_ke_util_" + str(suffix)
-        ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
-        self.__class__.wsName = wsName
-        return wsName
+        return self.__class__.wsName
 
     def getImpl(self):
         return self.__class__.serviceImpl
@@ -112,6 +173,14 @@ class kb_ke_utilTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
+    def fail_build_biclusters(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().build_biclusters(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def check_run_pdist_output(self, ret):
         self.assertTrue('dist_matrix' in ret)
         self.assertTrue('labels' in ret)
@@ -124,6 +193,37 @@ class kb_ke_utilTest(unittest.TestCase):
 
     def check_run_dendrogram_output(self, ret):
         self.assertTrue('result_plots' in ret)
+
+    def check_build_biclusters_output(self, ret, expect_gene_ids):
+        self.assertTrue('shock_id_list' in ret)
+
+        shock_id_list = ret['shock_id_list']
+
+        gene_ids = []
+        for shock_id in shock_id_list:
+            self.nodes_to_delete.append(shock_id)
+
+            shockret = requests.get(self.shockURL + '/node/' + shock_id,
+                                    headers={'Authorization': 'OAuth ' + self.token}).json()['data']
+            self.assertEqual(shockret['id'], shock_id)
+
+            # check data in shock
+            zipdir = os.path.join(self.scratch, str(uuid.uuid4()))
+            os.makedirs(zipdir)
+            self.dfu.shock_to_file(
+                {'shock_id': shock_id,
+                 'unpack': 'unpack',
+                 'file_path': zipdir
+                 })
+
+            result_files = os.listdir(zipdir)
+            json_file = [file_name for file_name in result_files if file_name.endswith('.JSON')][0]
+
+            json_data = open(os.path.join(zipdir, json_file)).read()
+            data = json.loads(json_data)
+            gene_ids += data
+
+        self.assertItemsEqual(gene_ids, expect_gene_ids)
 
     def test_bad_run_pdist_params(self):
         self.start_test()
@@ -225,3 +325,48 @@ class kb_ke_utilTest(unittest.TestCase):
                   'last_merges': 2}
         ret = self.getImpl().run_dendrogram(self.ctx, params)[0]
         self.check_run_dendrogram_output(ret)
+
+    def test_bad_build_biclusters_params(self):
+        self.start_test()
+        invalidate_params = {'missing_ndarray_ref': 'ndarray_ref',
+                             'dist_threshold': 'dist_threshold'}
+        error_msg = '"ndarray_ref" parameter is required, but missing'
+        self.fail_build_biclusters(invalidate_params, error_msg)
+
+        invalidate_params = {'ndarray_ref': 'ndarray_ref',
+                             'missing_dist_threshold': 'dist_threshold'}
+        error_msg = '"dist_threshold" parameter is required, but missing'
+        self.fail_build_biclusters(invalidate_params, error_msg)
+
+        invalidate_params = {'ndarray_ref': 'ndarray_ref',
+                             'dist_threshold': 'dist_threshold',
+                             'dist_metric': 'invalidate_metric'}
+        error_msg = 'INPUT ERROR:\nInput metric function [invalidate_metric] is not valid.\n'
+        self.fail_build_biclusters(invalidate_params, error_msg, contains=True)
+
+        invalidate_params = {'ndarray_ref': 'ndarray_ref',
+                             'dist_threshold': 'dist_threshold',
+                             'linkage_method': 'invalidate_method'}
+        error_msg = "INPUT ERROR:\nInput linkage algorithm [invalidate_method] is not valid.\n"
+        self.fail_build_biclusters(invalidate_params, error_msg, contains=True)
+
+        invalidate_params = {'ndarray_ref': 'ndarray_ref',
+                             'dist_threshold': 'dist_threshold',
+                             'fcluster_criterion': 'invalidate_criterion'}
+        error_msg = "INPUT ERROR:\nInput criterion [invalidate_criterion] is not valid.\n"
+        self.fail_build_biclusters(invalidate_params, error_msg, contains=True)
+
+    def test_build_biclusters(self):
+        self.start_test()
+        params = {'ndarray_ref': self.ndarray_ref,
+                  'dist_threshold': 1}
+        ret = self.getImpl().build_biclusters(self.ctx, params)[0]
+        self.check_build_biclusters_output(ret, ['gene_id_1', 'gene_id_2', 'gene_id_3'])
+
+        params = {'ndarray_ref': self.ndarray_ref,
+                  'dist_threshold': 1,
+                  'dist_metric': 'cityblock',
+                  'linkage_method': 'ward',
+                  'fcluster_criterion': 'distance'}
+        ret = self.getImpl().build_biclusters(self.ctx, params)[0]
+        self.check_build_biclusters_output(ret, ['gene_id_1', 'gene_id_2', 'gene_id_3'])

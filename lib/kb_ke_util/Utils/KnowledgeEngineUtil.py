@@ -3,9 +3,13 @@ import numpy
 import os
 import errno
 import uuid
+import json
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
 from matplotlib import pyplot as plt
+
+from Workspace.WorkspaceClient import Workspace as Workspace
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 
 
 def log(message, prefix_newline=False):
@@ -124,6 +128,40 @@ class KnowledgeEngineUtil:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
+    def _validate_build_biclusters_params(self, params):
+        """
+        _validate_build_biclusters_params:
+                validates params passed to build_biclusters method
+        """
+
+        log('start validating build_biclusters params')
+
+        # check for required parameters
+        for p in ['ndarray_ref', 'dist_threshold']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
+
+        # check metric validation
+        metric = params.get('dist_metric')
+        if metric and metric not in self.METRIC:
+            error_msg = 'INPUT ERROR:\nInput metric function [{}] is not valid.\n'.format(metric)
+            error_msg += 'Available metric: {}'.format(self.METRIC)
+            raise ValueError(error_msg)
+
+        # check method validation
+        method = params.get('linkage_method')
+        if method and method not in self.METHOD:
+            error_msg = 'INPUT ERROR:\nInput linkage algorithm [{}] is not valid.\n'.format(method)
+            error_msg += 'Available metric: {}'.format(self.METHOD)
+            raise ValueError(error_msg)
+
+        # check criterion validation
+        criterion = params.get('fcluster_criterion')
+        if criterion and criterion not in self.CRITERION:
+            error_msg = 'INPUT ERROR:\nInput criterion [{}] is not valid.\n'.format(criterion)
+            error_msg += 'Available metric: {}'.format(self.CRITERION)
+            raise ValueError(error_msg)
+
     def _is_number_string(self, str):
         """
         _is_number_string: check number string
@@ -219,6 +257,108 @@ class KnowledgeEngineUtil:
                              textcoords='offset points',
                              va='top', ha='center')
 
+    def _process_ndarray_data(self, ndarray_ref):
+        """
+        _process_ndarray_data: process ndarray data
+
+        return a dict with row_ids, col_ids and values
+        """
+        data_matrix = dict()
+
+        ndarray_object = self.ws.get_objects2({'objects': [{'ref': ndarray_ref}]})['data'][0]
+
+        ndarray_data = ndarray_object['data']
+        dim_context = ndarray_data['dim_context']
+
+        row_values = dim_context[0]['typed_values'][0]['values']
+        row_scalar_type = row_values['scalar_type']
+        row_values_key = '{}_values'.format(row_scalar_type)
+        row_ids = row_values[row_values_key]
+
+        col_values = dim_context[1]['typed_values'][0]['values']
+        col_scalar_type = col_values['scalar_type']
+        col_values_key = '{}_values'.format(col_scalar_type)
+        col_ids = col_values[col_values_key]
+
+        data_values = ndarray_data['typed_values']['values']
+        data_values_scalar_type = data_values['scalar_type']
+        data_values_key = '{}_values'.format(data_values_scalar_type)
+        one_d_values = data_values[data_values_key]
+        two_d_values = list()  # each element is an array representing 1 row values
+
+        total_values = len(row_ids) * len(col_ids)
+        if len(one_d_values) != total_values:
+            raise ValueError('Expecting {} values but getting {}'.format(total_values, 
+                                                                         len(one_d_values)))
+
+        col_size = len(col_ids)
+        for row_count in range(len(row_ids)):
+            start_pos = row_count * col_size
+            end_pos = (row_count + 1) * col_size
+            row_values = one_d_values[start_pos:end_pos]
+            two_d_values.append(map(float, row_values))
+
+        data_matrix = {'row_ids': row_ids,
+                       'col_ids': col_ids,
+                       'values': two_d_values}
+
+        return data_matrix
+
+    def _build_flat_cluster(self, data_matrix, dist_threshold, 
+                            dist_metric=None, linkage_method=None, fcluster_criterion=None):
+
+        """
+        _build_cluster: build flat clusters of data_matrix with distance threshold
+        """
+
+        # calculate distance matrix
+        pdist_params = {'data_matrix': data_matrix,
+                        'metric': dist_metric}
+        pdist_ret = self.run_pdist(pdist_params)
+
+        dist_matrix = pdist_ret['dist_matrix']
+        labels = pdist_ret['labels']
+
+        # performs hierarchical/agglomerative clustering
+        linkage_params = {'dist_matrix': dist_matrix,
+                          'method': linkage_method}
+        linkage_ret = self.run_linkage(linkage_params)
+
+        linkage_matrix = linkage_ret['linkage_matrix']
+
+        # generate flat clusters
+        fcluster_params = {'linkage_matrix': linkage_matrix,
+                           'dist_threshold': dist_threshold,
+                           'labels': labels,
+                           'criterion': fcluster_criterion}
+        fcluster_ret = self.run_fcluster(fcluster_params)
+
+        flat_cluster = fcluster_ret['flat_cluster']
+
+        return flat_cluster
+
+    def _save_clusters_to_shock(self, flat_cluster):
+        """
+        _save_clusters_to_shock: save clusters as JSON to shock
+        """
+        shock_id_list = list()
+
+        for key, elements in flat_cluster.iteritems():
+            output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+            self._mkdir_p(output_directory)
+
+            file_name = 'cluster_{}.JSON'.format(key)
+            file_path = os.path.join(output_directory, file_name)
+
+            with open(file_path, 'w') as outfile:
+                json.dump(elements, outfile)
+
+            shock_id = self.dfu.file_to_shock({'file_path': file_path,
+                                               'pack': 'zip'})['shock_id']
+            shock_id_list.append(shock_id)
+
+        return shock_id_list
+
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -226,6 +366,9 @@ class KnowledgeEngineUtil:
         self.shock_url = config['shock-url']
         self.srv_wiz_url = config['srv-wiz-url']
         self.scratch = config['scratch']
+
+        self.ws = Workspace(self.ws_url, token=self.token)
+        self.dfu = DataFileUtil(self.callback_url)
 
     def run_pdist(self, params):
         """
@@ -356,6 +499,8 @@ class KnowledgeEngineUtil:
         else:
             flat_cluster = self._process_fcluster(fcluster)
 
+        log('finished computing flat clusters')
+
         returnVal = {'flat_cluster': flat_cluster}
 
         return returnVal
@@ -430,5 +575,67 @@ class KnowledgeEngineUtil:
         result_plots.append(plot_file)
 
         returnVal = {'result_plots': result_plots}
+
+        return returnVal
+
+    def build_biclusters(self, params):
+        """
+        build_biclusters: build biclusters and store result feature sets as JSON into shock
+
+        ndarray_ref: NDArray object reference
+        dist_threshold: the threshold to apply when forming flat clusters
+
+        Optional arguments:
+        dist_metric: The distance metric to use. Default set to 'euclidean'.
+                     The distance function can be
+                     ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
+                      "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
+                      "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", 
+                      "sqeuclidean", "yule"]
+                     Details refer to:
+                     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+
+        linkage_method: The linkage algorithm to use. Default set to 'ward'.
+                        The method can be
+                        ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
+                        Details refer to:
+                        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+        fcluster_criterion: The criterion to use in forming flat clusters. 
+                            Default set to 'inconsistent'.
+                            The criterion can be
+                            ["inconsistent", "distance", "maxclust"]
+                            Details refer to:
+                            https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+        return:
+        shock_id_list: list of the id of the shock node where the zipped JSON biclustering 
+                       info output is stored
+
+        JSON format:
+        ["gene_id_1", "gene_id_2", "gene_id_3"]
+        """
+
+        log('--->\nrunning build_biclusters\n' +
+            'params:\n{}'.format(json.dumps(params, indent=1)))
+
+        self._validate_build_biclusters_params(params)
+
+        ndarray_ref = params.get('ndarray_ref')
+        dist_threshold = params.get('dist_threshold')
+
+        dist_metric = params.get('dist_metric')
+        linkage_method = params.get('linkage_method')
+        fcluster_criterion = params.get('fcluster_criterion')
+
+        data_matrix = self._process_ndarray_data(ndarray_ref)
+        flat_cluster = self._build_flat_cluster(data_matrix, dist_threshold,
+                                                dist_metric=dist_metric,
+                                                linkage_method=linkage_method,
+                                                fcluster_criterion=fcluster_criterion)
+
+        shock_id_list = self._save_clusters_to_shock(flat_cluster)
+
+        returnVal = {'shock_id_list': shock_id_list}
 
         return returnVal

@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "130cd55315bef52e971cd0d341e9dd4302911deb"
+    GIT_COMMIT_HASH = "134510c811367b9e9b6f2b2356a53a0e1d18f5fc"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -204,6 +204,58 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method run_dendrogram return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def build_biclusters(self, ctx, params):
+        """
+        build_biclusters: build biclusters and store result feature sets as JSON into shock
+        :param params: instance of type "BuildBiclustersParams" (Input of the
+           build_biclusters function ndarray_ref: NDArray object reference
+           dist_threshold: the threshold to apply when forming flat clusters
+           Optional arguments: dist_metric: The distance metric to use.
+           Default set to 'euclidean'. The distance function can be
+           ["braycurtis", "canberra", "chebyshev", "cityblock",
+           "correlation", "cosine", "dice", "euclidean", "hamming",
+           "jaccard", "kulsinski", "matching", "rogerstanimoto",
+           "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
+           "yule"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.
+           distance.pdist.html linkage_method: The linkage algorithm to use.
+           Default set to 'ward'. The method can be ["single", "complete",
+           "average", "weighted", "centroid", "median", "ward"] Details refer
+           to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.linkage.html fcluster_criterion: The criterion to use in
+           forming flat clusters. Default set to 'distance'. The criterion
+           can be ["inconsistent", "distance", "maxclust"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.fcluster.html) -> structure: parameter "ndarray_ref" of
+           type "obj_ref" (An X/Y/Z style reference), parameter
+           "dist_threshold" of Double, parameter "dist_metric" of String,
+           parameter "linkage_method" of String, parameter
+           "fcluster_criterion" of String
+        :returns: instance of type "BuildBiclustersOutput" (Ouput of the
+           build_biclusters function shock_id_list: list of the id of the
+           shock node where the zipped JSON biclustering info output is
+           stored JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]) ->
+           structure: parameter "shock_id_list" of list of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN build_biclusters
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.build_biclusters(params)
+        #END build_biclusters
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method build_biclusters return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

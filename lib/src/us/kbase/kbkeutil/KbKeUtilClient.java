@@ -242,6 +242,24 @@ public class KbKeUtilClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: build_biclusters</p>
+     * <pre>
+     * build_biclusters: build biclusters and store result feature sets as JSON into shock
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.BuildBiclustersParams BuildBiclustersParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.BuildBiclustersOutput BuildBiclustersOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildBiclustersOutput buildBiclusters(BuildBiclustersParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildBiclustersOutput>> retType = new TypeReference<List<BuildBiclustersOutput>>() {};
+        List<BuildBiclustersOutput> res = caller.jsonrpcCall("kb_ke_util.build_biclusters", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
