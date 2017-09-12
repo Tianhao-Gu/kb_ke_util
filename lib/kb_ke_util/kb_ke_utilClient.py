@@ -145,6 +145,44 @@ class kb_ke_util(object):
             'kb_ke_util.run_dendrogram',
             [params], self._service_ver, context)
 
+    def build_biclusters(self, params, context=None):
+        """
+        build_biclusters: build biclusters and store result feature sets as JSON into shock
+        :param params: instance of type "BuildBiclustersParams" (Input of the
+           build_biclusters function ndarray_ref: NDArray object reference
+           dist_threshold: the threshold to apply when forming flat clusters
+           Optional arguments: dist_metric: The distance metric to use.
+           Default set to 'euclidean'. The distance function can be
+           ["braycurtis", "canberra", "chebyshev", "cityblock",
+           "correlation", "cosine", "dice", "euclidean", "hamming",
+           "jaccard", "kulsinski", "matching", "rogerstanimoto",
+           "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
+           "yule"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.
+           distance.pdist.html linkage_method: The linkage algorithm to use.
+           Default set to 'ward'. The method can be ["single", "complete",
+           "average", "weighted", "centroid", "median", "ward"] Details refer
+           to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.linkage.html fcluster_criterion: The criterion to use in
+           forming flat clusters. Default set to 'distance'. The criterion
+           can be ["inconsistent", "distance", "maxclust"] Details refer to:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.
+           hierarchy.fcluster.html) -> structure: parameter "ndarray_ref" of
+           type "obj_ref" (An X/Y/Z style reference), parameter
+           "dist_threshold" of Double, parameter "dist_metric" of String,
+           parameter "linkage_method" of String, parameter
+           "fcluster_criterion" of String
+        :returns: instance of type "BuildBiclustersOutput" (Ouput of the
+           build_biclusters function shock_id_list: list of the id of the
+           shock node where the zipped JSON biclustering info output is
+           stored JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]) ->
+           structure: parameter "shock_id_list" of list of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.build_biclusters',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('kb_ke_util.status',
                                         [], self._service_ver, context)

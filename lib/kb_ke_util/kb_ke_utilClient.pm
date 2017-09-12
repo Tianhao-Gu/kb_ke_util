@@ -492,6 +492,106 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.den
     }
 }
  
+
+
+=head2 build_biclusters
+
+  $returnVal = $obj->build_biclusters($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.BuildBiclustersParams
+$returnVal is a kb_ke_util.BuildBiclustersOutput
+BuildBiclustersParams is a reference to a hash where the following keys are defined:
+	ndarray_ref has a value which is a kb_ke_util.obj_ref
+	dist_threshold has a value which is a float
+	dist_metric has a value which is a string
+	linkage_method has a value which is a string
+	fcluster_criterion has a value which is a string
+obj_ref is a string
+BuildBiclustersOutput is a reference to a hash where the following keys are defined:
+	shock_id_list has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.BuildBiclustersParams
+$returnVal is a kb_ke_util.BuildBiclustersOutput
+BuildBiclustersParams is a reference to a hash where the following keys are defined:
+	ndarray_ref has a value which is a kb_ke_util.obj_ref
+	dist_threshold has a value which is a float
+	dist_metric has a value which is a string
+	linkage_method has a value which is a string
+	fcluster_criterion has a value which is a string
+obj_ref is a string
+BuildBiclustersOutput is a reference to a hash where the following keys are defined:
+	shock_id_list has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+build_biclusters: build biclusters and store result feature sets as JSON into shock
+
+=back
+
+=cut
+
+ sub build_biclusters
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function build_biclusters (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to build_biclusters:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'build_biclusters');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.build_biclusters",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'build_biclusters',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method build_biclusters",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'build_biclusters',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -535,16 +635,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'run_dendrogram',
+                method_name => 'build_biclusters',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method run_dendrogram",
+            error => "Error invoking method build_biclusters",
             status_line => $self->{client}->status_line,
-            method_name => 'run_dendrogram',
+            method_name => 'build_biclusters',
         );
     }
 }
@@ -606,6 +706,37 @@ an int
 =begin text
 
 an int
+
+=end text
+
+=back
+
+
+
+=head2 obj_ref
+
+=over 4
+
+
+
+=item Description
+
+An X/Y/Z style reference
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
 
 =end text
 
@@ -955,6 +1086,112 @@ result_plots has a value which is a reference to a list where each element is a 
 
 a reference to a hash where the following keys are defined:
 result_plots has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildBiclustersParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the build_biclusters function
+ndarray_ref: NDArray object reference
+dist_threshold: the threshold to apply when forming flat clusters
+
+Optional arguments:
+dist_metric: The distance metric to use. Default set to 'euclidean'.
+             The distance function can be
+             ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
+              "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
+              "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean", 
+              "yule"]
+             Details refer to:
+             https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+
+linkage_method: The linkage algorithm to use. Default set to 'ward'.
+                The method can be
+                ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
+                Details refer to:
+                https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+fcluster_criterion: The criterion to use in forming flat clusters. Default set to 'distance'.
+                    The criterion can be
+                    ["inconsistent", "distance", "maxclust"]
+                    Details refer to:
+                    https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ndarray_ref has a value which is a kb_ke_util.obj_ref
+dist_threshold has a value which is a float
+dist_metric has a value which is a string
+linkage_method has a value which is a string
+fcluster_criterion has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ndarray_ref has a value which is a kb_ke_util.obj_ref
+dist_threshold has a value which is a float
+dist_metric has a value which is a string
+linkage_method has a value which is a string
+fcluster_criterion has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildBiclustersOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the build_biclusters function
+shock_id_list: list of the id of the shock node where the zipped JSON biclustering info output is stored
+
+JSON format:
+["gene_id_1", "gene_id_2", "gene_id_3"]
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+shock_id_list has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+shock_id_list has a value which is a reference to a list where each element is a string
 
 
 =end text
