@@ -1,0 +1,16 @@
+{
+    "name" : "Enrich onthology",
+    "short_description" : "Run GO term enrichment analysis and store result enrichment info as JSON into shock.",
+    "long_description" : "Run GO term enrichment analysis and store result enrichment info as JSON into shock.",
+    "tags" : {
+        "categories" : ["KnowledgeEngine"],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": []
+        }
+    }
+}

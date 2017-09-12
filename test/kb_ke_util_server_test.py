@@ -6,6 +6,7 @@ import time
 import requests  # noqa: F401
 import inspect
 import uuid
+import hashlib
 
 
 from os import environ
@@ -181,6 +182,14 @@ class kb_ke_utilTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
+    def fail_enrich_onthology(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().enrich_onthology(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def check_run_pdist_output(self, ret):
         self.assertTrue('dist_matrix' in ret)
         self.assertTrue('labels' in ret)
@@ -215,7 +224,6 @@ class kb_ke_utilTest(unittest.TestCase):
                  'unpack': 'unpack',
                  'file_path': zipdir
                  })
-
             result_files = os.listdir(zipdir)
             json_file = [file_name for file_name in result_files if file_name.endswith('.JSON')][0]
 
@@ -224,6 +232,37 @@ class kb_ke_utilTest(unittest.TestCase):
             gene_ids += data
 
         self.assertItemsEqual(gene_ids, expect_gene_ids)
+
+    def check_enrich_onthology_output(self, ret, expect_go_ids, expect_json_md5):
+        self.assertTrue('enrichment_profile_shock_id' in ret)
+
+        shock_id = ret['enrichment_profile_shock_id']
+        self.nodes_to_delete.append(shock_id)
+
+        shockret = requests.get(self.shockURL + '/node/' + shock_id,
+                                headers={'Authorization': 'OAuth ' + self.token}).json()['data']
+        self.assertEqual(shockret['id'], shock_id)
+
+        # check data in shock
+        zipdir = os.path.join(self.scratch, str(uuid.uuid4()))
+        os.makedirs(zipdir)
+        self.dfu.shock_to_file(
+            {'shock_id': shock_id,
+             'unpack': 'unpack',
+             'file_path': zipdir
+             })
+        json_file = 'go_enrichment.JSON'
+        result_files = os.listdir(zipdir)
+        self.assertTrue(json_file in result_files)
+
+        json_data = open(os.path.join(zipdir, json_file)).read()
+        data = json.loads(json_data)
+
+        self.assertItemsEqual(data.keys(), expect_go_ids)
+
+        jmd5 = hashlib.md5(open(os.path.join(zipdir, json_file), 'rb')
+                           .read()).hexdigest()
+        self.assertEquals(jmd5, expect_json_md5)
 
     def test_bad_run_pdist_params(self):
         self.start_test()
@@ -370,3 +409,39 @@ class kb_ke_utilTest(unittest.TestCase):
                   'fcluster_criterion': 'distance'}
         ret = self.getImpl().build_biclusters(self.ctx, params)[0]
         self.check_build_biclusters_output(ret, ['gene_id_1', 'gene_id_2', 'gene_id_3'])
+
+    def test_bad_enrich_onthology_params(self):
+        self.start_test()
+        invalidate_params = {'missing_sample_set_shock_id': 'sample_set_shock_id',
+                             'entity_term_set': 'entity_term_set'}
+        error_msg = '"sample_set_shock_id" parameter is required, but missing'
+        self.fail_enrich_onthology(invalidate_params, error_msg)
+
+        invalidate_params = {'sample_set_shock_id': 'sample_set_shock_id',
+                             'missing_entity_term_set': 'entity_term_set'}
+        error_msg = '"entity_term_set" parameter is required, but missing'
+        self.fail_enrich_onthology(invalidate_params, error_msg)
+
+    def test_enrich_onthology(self):
+        self.start_test()
+
+        params = {'ndarray_ref': self.ndarray_ref,
+                  'dist_threshold': 0.5}
+        ret = self.getImpl().build_biclusters(self.ctx, params)[0]
+        self.check_build_biclusters_output(ret, ['gene_id_1', 'gene_id_2', 'gene_id_3'])
+
+        sample_set_shock_id = ret['shock_id_list'][0]
+
+        # relationship: GO:0006355 -> GO:2001141 -> GO:0050789 -> GO:0065007 -> GO:0008150
+        entity_term_set = {'gene_id_1': ['GO:0008150'],
+                           'gene_id_2': ['GO:0065007', 'GO:0050789'],
+                           'gene_id_3': ['GO:2001141'],
+                           'gene_id_4': ['GO:0006355']}
+
+        params = {'sample_set_shock_id': sample_set_shock_id,
+                  'entity_term_set': entity_term_set,
+                  'propagation': 1}
+        ret = self.getImpl().enrich_onthology(self.ctx, params)[0]
+        expect_go_ids = ['GO:0006355', 'GO:2001141', 'GO:0050789', 'GO:0065007', 'GO:0008150']
+        expect_json_md5 = '3222195c118f300a36fe512322db5d55'
+        self.check_enrich_onthology_output(ret, expect_go_ids, expect_json_md5)

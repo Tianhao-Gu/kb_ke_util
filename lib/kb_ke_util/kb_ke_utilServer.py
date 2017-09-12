@@ -353,6 +353,10 @@ class Application(object):
                              name='kb_ke_util.build_biclusters',
                              types=[dict])
         self.method_authentication['kb_ke_util.build_biclusters'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_ke_util.enrich_onthology,
+                             name='kb_ke_util.enrich_onthology',
+                             types=[dict])
+        self.method_authentication['kb_ke_util.enrich_onthology'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_ke_util.status,
                              name='kb_ke_util.status',
                              types=[dict])

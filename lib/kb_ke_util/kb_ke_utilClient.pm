@@ -592,6 +592,106 @@ build_biclusters: build biclusters and store result feature sets as JSON into sh
     }
 }
  
+
+
+=head2 enrich_onthology
+
+  $returnVal = $obj->enrich_onthology($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.EnrichOnthologyParams
+$returnVal is a kb_ke_util.EnrichOnthologyOutput
+EnrichOnthologyParams is a reference to a hash where the following keys are defined:
+	sample_set_shock_id has a value which is a string
+	entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
+	propagation has a value which is a kb_ke_util.boolean
+entity_guid is a string
+assigned_term_guids is a reference to a list where each element is a string
+boolean is an int
+EnrichOnthologyOutput is a reference to a hash where the following keys are defined:
+	enrichment_profile_shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.EnrichOnthologyParams
+$returnVal is a kb_ke_util.EnrichOnthologyOutput
+EnrichOnthologyParams is a reference to a hash where the following keys are defined:
+	sample_set_shock_id has a value which is a string
+	entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
+	propagation has a value which is a kb_ke_util.boolean
+entity_guid is a string
+assigned_term_guids is a reference to a list where each element is a string
+boolean is an int
+EnrichOnthologyOutput is a reference to a hash where the following keys are defined:
+	enrichment_profile_shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+enrich_onthology: run GO term enrichment analysis
+
+=back
+
+=cut
+
+ sub enrich_onthology
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function enrich_onthology (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to enrich_onthology:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'enrich_onthology');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.enrich_onthology",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'enrich_onthology',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method enrich_onthology",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'enrich_onthology',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -635,16 +735,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'build_biclusters',
+                method_name => 'enrich_onthology',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method build_biclusters",
+            error => "Error invoking method enrich_onthology",
             status_line => $self->{client}->status_line,
-            method_name => 'build_biclusters',
+            method_name => 'enrich_onthology',
         );
     }
 }
@@ -1192,6 +1292,146 @@ shock_id_list has a value which is a reference to a list where each element is a
 
 a reference to a hash where the following keys are defined:
 shock_id_list has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 entity_guid
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 assigned_term_guids
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a list where each element is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a list where each element is a string
+
+=end text
+
+=back
+
+
+
+=head2 EnrichOnthologyParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the enrich_onthology function
+sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
+                     JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
+                 e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
+
+Optional arguments:
+propagation: includes is_a relationship to all go terms (default is 0)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+sample_set_shock_id has a value which is a string
+entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
+propagation has a value which is a kb_ke_util.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+sample_set_shock_id has a value which is a string
+entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
+propagation has a value which is a kb_ke_util.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 EnrichOnthologyOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the enrich_onthology function
+enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output is stored
+
+JSON format:
+{"go_term_1": {"sample_count": 10,
+               "total_count": 20,
+               "p_value": 0.1,
+               "ontology_type": "P"}}
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+enrichment_profile_shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+enrichment_profile_shock_id has a value which is a string
 
 
 =end text
