@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "134510c811367b9e9b6f2b2356a53a0e1d18f5fc"
+    GIT_COMMIT_HASH = "7ac00a325ad1855ba2d8c93bd510f208009acb6b"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -256,6 +256,46 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method build_biclusters return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def enrich_onthology(self, ctx, params):
+        """
+        enrich_onthology: run GO term enrichment analysis
+        :param params: instance of type "EnrichOnthologyParams" (Input of the
+           enrich_onthology function sample_set_shock_id: shock node id where
+           the zipped JSON biclustering info output is stored JSON format:
+           ["gene_id_1", "gene_id_2", "gene_id_3"] entity_term_set: entity
+           terms dict structure where global GO term and gene_ids are stored
+           e.g. {'gene_id_1': ['go_term_1', 'go_term_2']} Optional arguments:
+           propagation: includes is_a relationship to all go terms (default
+           is 0)) -> structure: parameter "sample_set_shock_id" of String,
+           parameter "entity_term_set" of mapping from type "entity_guid" to
+           type "assigned_term_guids" -> list of String, parameter
+           "propagation" of type "boolean" (A boolean - 0 for false, 1 for
+           true. @range (0, 1))
+        :returns: instance of type "EnrichOnthologyOutput" (Ouput of the
+           enrich_onthology function enrichment_profile_shock_id: shock node
+           where the zipped JSON enrichment info output is stored JSON
+           format: {"go_term_1": {"sample_count": 10, "total_count": 20,
+           "p_value": 0.1, "ontology_type": "P"}}) -> structure: parameter
+           "enrichment_profile_shock_id" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN enrich_onthology
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.enrich_onthology(params)
+        #END enrich_onthology
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method enrich_onthology return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

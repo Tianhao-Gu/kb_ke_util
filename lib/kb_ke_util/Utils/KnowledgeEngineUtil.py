@@ -4,6 +4,7 @@ import os
 import errno
 import uuid
 import json
+import fisher
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
 from matplotlib import pyplot as plt
@@ -161,6 +162,18 @@ class KnowledgeEngineUtil:
             error_msg = 'INPUT ERROR:\nInput criterion [{}] is not valid.\n'.format(criterion)
             error_msg += 'Available metric: {}'.format(self.CRITERION)
             raise ValueError(error_msg)
+
+    def _validate_enrich_onthology_params(self, params):
+        """
+        _validate_enrich_onthology_params:
+                validates params passed to enrich_onthology method
+        """
+        log('start validating enrich_onthology params')
+
+        # check for required parameters
+        for p in ['sample_set_shock_id', 'entity_term_set']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
 
     def _is_number_string(self, str):
         """
@@ -358,6 +371,216 @@ class KnowledgeEngineUtil:
             shock_id_list.append(shock_id)
 
         return shock_id_list
+
+    def _get_shock_node_sample_set(self, sample_set_shock_id):
+        """
+        _get_shock_node_sample_set: get feature set ids from shock node
+        """
+
+        zipdir = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(zipdir)
+        self.dfu.shock_to_file({'shock_id': sample_set_shock_id,
+                                'unpack': 'unpack',
+                                'file_path': zipdir})
+
+        result_files = os.listdir(zipdir)
+        json_file = [file_name for file_name in result_files if file_name.endswith('.JSON')][0]
+
+        json_data = open(os.path.join(zipdir, json_file)).read()
+        feature_set_ids = json.loads(json_data)
+        
+        return feature_set_ids
+
+    def _process_entity_term_set(self, entity_term_set, propagation):
+        """
+        _process_entity_term_set: process entity_term_set and get global go_id: [genes_ids] map
+        """
+        go_id_gene_ids_list_map = dict()
+
+        for gene_id, go_terms in entity_term_set.iteritems():
+            for go_term in go_terms:
+                if go_term in go_id_gene_ids_list_map:
+                    gene_ids = go_id_gene_ids_list_map.get(go_term)
+                    gene_ids.append(gene_id)
+                    go_id_gene_ids_list_map.update({go_term: gene_ids})
+                else:
+                    go_id_gene_ids_list_map.update({go_term: [gene_id]})
+
+        return go_id_gene_ids_list_map
+
+    def _get_immediate_parents(self, ontology_hash, go_id, 
+                               is_a_relationship, regulates_relationship, part_of_relationship):
+        """
+        _get_immediate_parents: get immediate parents go_ids for a given go_id
+        """
+        parent_ids = []
+        antology_info = ontology_hash.get(go_id)
+
+        if antology_info:
+            if is_a_relationship:
+                is_a_parents = antology_info.get('is_a')
+                if is_a_parents:
+                    for parent_string in is_a_parents:
+                        is_a_parent_id = parent_string.split('!')[0][:-1]
+                        parent_ids.append(is_a_parent_id)
+
+            if regulates_relationship:
+                relationship = antology_info.get('relationship')
+                if relationship:
+                    for relationship_string in relationship:
+                        if relationship_string.split(' ')[0] == 'regulates':
+                            parent_ids.append(relationship_string.split(' ')[1])
+
+            if part_of_relationship:
+                relationship = antology_info.get('relationship')
+                if relationship:
+                    for relationship_string in relationship:
+                        if relationship_string.split(' ')[0] == 'part_of':
+                            parent_ids.append(relationship_string.split(' ')[1])
+
+        return parent_ids
+
+    def _fetch_all_parents_go_ids(self, ontology_hash, go_id, 
+                                  is_a_relationship, regulates_relationship, part_of_relationship):
+        """
+        _fetch_all_parents_go_ids: recusively fetch all parent go_ids
+        """
+
+        parent_ids = self._get_immediate_parents(ontology_hash, go_id, 
+                                                 is_a_relationship, regulates_relationship, 
+                                                 part_of_relationship)
+        if parent_ids:
+            grand_parent_ids = parent_ids
+            for parent_id in parent_ids:
+                grand_parent_ids += self._fetch_all_parents_go_ids(ontology_hash, parent_id, 
+                                                                   is_a_relationship, 
+                                                                   regulates_relationship, 
+                                                                   part_of_relationship)[parent_id]
+            return {go_id: list(set(grand_parent_ids))}
+        else:
+            return {go_id: []}
+
+    def _generate_parent_child_map(self, ontology_hash, go_ids, 
+                                   is_a_relationship=True,
+                                   regulates_relationship=False,
+                                   part_of_relationship=False):
+        """
+        _generate_parent_child_map: fetch parent go_ids for given go_id
+        """
+
+        log('start fetching parent go_ids')
+        start = time.time()
+
+        go_id_parent_ids_map = {}
+        
+        for go_id in go_ids:
+            fetch_result = self._fetch_all_parents_go_ids(ontology_hash, go_id, 
+                                                          is_a_relationship, 
+                                                          regulates_relationship, 
+                                                          part_of_relationship)
+
+            go_id_parent_ids_map.update(fetch_result) 
+
+        end = time.time()
+        log('used {:.2f} s'.format(end - start))
+
+        return go_id_parent_ids_map
+
+    def _get_ontology_hash(self):
+        """
+        _get_ontology_hash: get global ontology info hash
+        """
+        ontology_hash = dict()
+        ontologies = self.ws.get_objects([{'workspace': 'KBaseOntology',
+                                           'name': 'gene_ontology'},
+                                          {'workspace': 'KBaseOntology',
+                                           'name': 'plant_ontology'}])
+        ontology_hash.update(ontologies[0]['data']['term_hash'])
+        ontology_hash.update(ontologies[1]['data']['term_hash'])
+
+        return ontology_hash
+
+    def _process_parent_go_terms(self, go_id_gene_ids_list_map, ontology_hash):
+        """
+        _process_parent_go_terms: get go term parents and include parent gene_ids to all children
+        """
+
+        go_ids = go_id_gene_ids_list_map.keys()
+
+        go_id_parent_ids_map = self._generate_parent_child_map(ontology_hash, 
+                                                               go_ids,
+                                                               regulates_relationship=False)
+
+        log('including parent feature id to go_id map')
+        for go_id, parent_ids in go_id_parent_ids_map.iteritems():
+            mapped_features = go_id_gene_ids_list_map.get(go_id)
+
+            for parent_id in parent_ids:
+                parent_mapped_features = go_id_gene_ids_list_map.get(parent_id)
+
+                if not parent_mapped_features:
+                    parent_mapped_features = []
+
+                if mapped_features:
+                    parent_mapped_features += mapped_features
+
+                go_id_gene_ids_list_map.update({parent_id: list(set(parent_mapped_features))})
+
+        log('removing parent go term not in original go terms')
+        for go_id in go_id_gene_ids_list_map.keys():
+            if go_id not in go_ids:
+                del go_id_gene_ids_list_map[go_id]
+
+    def _append_ontology_type(self, go_enrichment, ontology_hash):
+        """
+        _append_go_type: append ontology type info into go_enrichment dict
+        """
+        for go_id, enrich_info in go_enrichment.iteritems():
+            namespace = ontology_hash[go_id]['namespace']
+            enrich_info.update({'ontology_type': namespace.split("_")[1][0].upper()})
+
+    def _save_go_enrichment_to_shock(self, go_enrichment):
+        """
+        _save_go_enrichment_to_shock: save go_enrichment hash as JSON to shock
+        """
+        output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(output_directory)
+
+        file_name = 'go_enrichment.JSON'
+        file_path = os.path.join(output_directory, file_name)
+
+        with open(file_path, 'w') as outfile:
+            json.dump(go_enrichment, outfile)
+
+        shock_id = self.dfu.file_to_shock({'file_path': file_path,
+                                           'pack': 'zip'})['shock_id']
+
+        return shock_id
+
+    def _calculate_go_enrichment(self, go_id_gene_ids_list_map, feature_set_ids, 
+                                 total_feature_ids):
+        """
+        _calculate_go_enrichment: calcualte go enrichment
+        """
+        go_enrichment = dict()
+
+        for go_id, mapped_gene_ids in go_id_gene_ids_list_map.iteritems():
+            # in feature_set matches go_id
+            a = len(set(mapped_gene_ids).intersection(feature_set_ids))
+            # in feature_set doesn't match go_id
+            b = len(feature_set_ids) - a
+            # not in feature_set matches go_id
+            c = len(mapped_gene_ids) - a
+            # not in feature_set doesn't match go_id
+            d = len(total_feature_ids) - len(feature_set_ids) - c
+
+            raw_p_value = fisher.pvalue(a, b, c, d).two_tail
+
+            go_enrichment.update({go_id: {'raw_p_value': raw_p_value,
+                                          'total_count': len(mapped_gene_ids),
+                                          'sample_count': a}})
+
+        return go_enrichment
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -637,5 +860,55 @@ class KnowledgeEngineUtil:
         shock_id_list = self._save_clusters_to_shock(flat_cluster)
 
         returnVal = {'shock_id_list': shock_id_list}
+
+        return returnVal
+
+    def enrich_onthology(self, params):
+        """
+        enrich_onthology: run GO term enrichment analysis
+
+        sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
+                             JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+        entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
+                         e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
+
+        Optional arguments:
+        propagation: includes is_a relationship to all go terms (default is 0)
+
+        return:
+        enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output
+                                     is stored
+
+        JSON format:
+        {"go_term_1": {"sample_count": 10,
+                       "total_count": 20,
+                       "p_value": 0.1,
+                       "ontology_type": "P"}}
+        """
+
+        log('--->\nrunning enrich_onthology')
+
+        self._validate_enrich_onthology_params(params)
+
+        sample_set_shock_id = params.get('sample_set_shock_id')
+        entity_term_set = params.get('entity_term_set')
+        propagation = params.get('propagation', False)
+
+        feature_set_ids = self._get_shock_node_sample_set(sample_set_shock_id)
+        go_id_gene_ids_list_map = self._process_entity_term_set(entity_term_set, propagation)
+        ontology_hash = self._get_ontology_hash()
+
+        if propagation:
+            self._process_parent_go_terms(go_id_gene_ids_list_map, ontology_hash)
+
+        go_enrichment = self._calculate_go_enrichment(go_id_gene_ids_list_map, 
+                                                      feature_set_ids, 
+                                                      entity_term_set.keys())
+
+        self._append_ontology_type(go_enrichment, ontology_hash)
+
+        enrichment_profile_shock_id = self._save_go_enrichment_to_shock(go_enrichment)
+
+        returnVal = {'enrichment_profile_shock_id': enrichment_profile_shock_id}
 
         return returnVal

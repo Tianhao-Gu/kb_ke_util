@@ -200,4 +200,41 @@ module kb_ke_util {
   */
   funcdef build_biclusters(BuildBiclustersParams params) returns (BuildBiclustersOutput returnVal) authentication required;
 
+  typedef string entity_guid;
+  typedef list<string> assigned_term_guids;
+
+  /* Input of the enrich_onthology function
+    sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
+                         JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+    entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
+                     e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
+
+    Optional arguments:
+    propagation: includes is_a relationship to all go terms (default is 0)
+  */
+  typedef structure{
+      string sample_set_shock_id;
+      mapping<entity_guid, assigned_term_guids> entity_term_set;
+
+      boolean propagation;
+  } EnrichOnthologyParams;
+
+  /* Ouput of the enrich_onthology function
+    enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output is stored
+
+    JSON format:
+    {"go_term_1": {"sample_count": 10,
+                   "total_count": 20,
+                   "p_value": 0.1,
+                   "ontology_type": "P"}}
+  */
+  typedef structure {
+    string enrichment_profile_shock_id;
+  } EnrichOnthologyOutput;
+
+  /*
+  enrich_onthology: run GO term enrichment analysis
+  */
+  funcdef enrich_onthology(EnrichOnthologyParams params) returns (EnrichOnthologyOutput returnVal) authentication required;
+
 };

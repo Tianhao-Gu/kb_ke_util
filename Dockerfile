@@ -24,6 +24,7 @@ RUN pip install cffi --upgrade \
 # -----------------------------------------
 
 RUN pip install --upgrade scipy
+RUN pip install fisher
 
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work

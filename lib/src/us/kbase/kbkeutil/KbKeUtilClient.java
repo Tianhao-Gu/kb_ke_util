@@ -260,6 +260,24 @@ public class KbKeUtilClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: enrich_onthology</p>
+     * <pre>
+     * enrich_onthology: run GO term enrichment analysis
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.EnrichOnthologyParams EnrichOnthologyParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.EnrichOnthologyOutput EnrichOnthologyOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public EnrichOnthologyOutput enrichOnthology(EnrichOnthologyParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<EnrichOnthologyOutput>> retType = new TypeReference<List<EnrichOnthologyOutput>>() {};
+        List<EnrichOnthologyOutput> res = caller.jsonrpcCall("kb_ke_util.enrich_onthology", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};

@@ -183,6 +183,32 @@ class kb_ke_util(object):
             'kb_ke_util.build_biclusters',
             [params], self._service_ver, context)
 
+    def enrich_onthology(self, params, context=None):
+        """
+        enrich_onthology: run GO term enrichment analysis
+        :param params: instance of type "EnrichOnthologyParams" (Input of the
+           enrich_onthology function sample_set_shock_id: shock node id where
+           the zipped JSON biclustering info output is stored JSON format:
+           ["gene_id_1", "gene_id_2", "gene_id_3"] entity_term_set: entity
+           terms dict structure where global GO term and gene_ids are stored
+           e.g. {'gene_id_1': ['go_term_1', 'go_term_2']} Optional arguments:
+           propagation: includes is_a relationship to all go terms (default
+           is 0)) -> structure: parameter "sample_set_shock_id" of String,
+           parameter "entity_term_set" of mapping from type "entity_guid" to
+           type "assigned_term_guids" -> list of String, parameter
+           "propagation" of type "boolean" (A boolean - 0 for false, 1 for
+           true. @range (0, 1))
+        :returns: instance of type "EnrichOnthologyOutput" (Ouput of the
+           enrich_onthology function enrichment_profile_shock_id: shock node
+           where the zipped JSON enrichment info output is stored JSON
+           format: {"go_term_1": {"sample_count": 10, "total_count": 20,
+           "p_value": 0.1, "ontology_type": "P"}}) -> structure: parameter
+           "enrichment_profile_shock_id" of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.enrich_onthology',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('kb_ke_util.status',
                                         [], self._service_ver, context)
