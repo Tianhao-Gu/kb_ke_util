@@ -171,7 +171,7 @@ class KnowledgeEngineUtil:
         log('start validating enrich_onthology params')
 
         # check for required parameters
-        for p in ['sample_set_shock_id', 'entity_term_set']:
+        for p in ['sample_set', 'entity_term_set']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
@@ -832,11 +832,8 @@ class KnowledgeEngineUtil:
                             https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
 
         return:
-        shock_id_list: list of the id of the shock node where the zipped JSON biclustering 
-                       info output is stored
-
-        JSON format:
-        ["gene_id_1", "gene_id_2", "gene_id_3"]
+        biclusters: list of biclusters
+                    e.g. [["gene_id_1", "gene_id_2"], ["gene_id_3"]]
         """
 
         log('--->\nrunning build_biclusters\n' +
@@ -856,10 +853,9 @@ class KnowledgeEngineUtil:
                                                 dist_metric=dist_metric,
                                                 linkage_method=linkage_method,
                                                 fcluster_criterion=fcluster_criterion)
+        biclusters = flat_cluster.values()
 
-        shock_id_list = self._save_clusters_to_shock(flat_cluster)
-
-        returnVal = {'shock_id_list': shock_id_list}
+        returnVal = {'biclusters': biclusters}
 
         return returnVal
 
@@ -867,8 +863,8 @@ class KnowledgeEngineUtil:
         """
         enrich_onthology: run GO term enrichment analysis
 
-        sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
-                             JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+        sample_set: list of gene_ids in clustering
+                    e.g. ["gene_id_1", "gene_id_2", "gene_id_3"]
         entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
                          e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
 
@@ -876,39 +872,33 @@ class KnowledgeEngineUtil:
         propagation: includes is_a relationship to all go terms (default is 0)
 
         return:
-        enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output
-                                     is stored
-
-        JSON format:
-        {"go_term_1": {"sample_count": 10,
-                       "total_count": 20,
-                       "p_value": 0.1,
-                       "ontology_type": "P"}}
+        enrichment_profile: dict structure stores enrichment info
+                            e.g. {"go_term_1": {"sample_count": 10,
+                                                "total_count": 20,
+                                                "p_value": 0.1,
+                                                "ontology_type": "P"}}
         """
 
         log('--->\nrunning enrich_onthology')
 
         self._validate_enrich_onthology_params(params)
 
-        sample_set_shock_id = params.get('sample_set_shock_id')
+        sample_set = params.get('sample_set')
         entity_term_set = params.get('entity_term_set')
         propagation = params.get('propagation', False)
 
-        feature_set_ids = self._get_shock_node_sample_set(sample_set_shock_id)
         go_id_gene_ids_list_map = self._process_entity_term_set(entity_term_set, propagation)
         ontology_hash = self._get_ontology_hash()
 
         if propagation:
             self._process_parent_go_terms(go_id_gene_ids_list_map, ontology_hash)
 
-        go_enrichment = self._calculate_go_enrichment(go_id_gene_ids_list_map, 
-                                                      feature_set_ids, 
-                                                      entity_term_set.keys())
+        enrichment_profile = self._calculate_go_enrichment(go_id_gene_ids_list_map, 
+                                                           sample_set, 
+                                                           entity_term_set.keys())
 
-        self._append_ontology_type(go_enrichment, ontology_hash)
+        self._append_ontology_type(enrichment_profile, ontology_hash)
 
-        enrichment_profile_shock_id = self._save_go_enrichment_to_shock(go_enrichment)
-
-        returnVal = {'enrichment_profile_shock_id': enrichment_profile_shock_id}
+        returnVal = {'enrichment_profile': enrichment_profile}
 
         return returnVal

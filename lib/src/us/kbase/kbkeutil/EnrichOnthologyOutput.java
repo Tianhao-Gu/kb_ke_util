@@ -15,54 +15,53 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: EnrichOnthologyOutput</p>
  * <pre>
  * Ouput of the enrich_onthology function
- * enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output is stored
- * JSON format:
- * {"go_term_1": {"sample_count": 10,
- *                "total_count": 20,
- *                "p_value": 0.1,
- *                "ontology_type": "P"}}
+ * enrichment_profile: dict structure stores enrichment info
+ *                     e.g. {"go_term_1": {"sample_count": 10,
+ *                                         "total_count": 20,
+ *                                         "p_value": 0.1,
+ *                                         "ontology_type": "P"}}
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "enrichment_profile_shock_id"
+    "enrichment_profile"
 })
 public class EnrichOnthologyOutput {
 
-    @JsonProperty("enrichment_profile_shock_id")
-    private String enrichmentProfileShockId;
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("enrichment_profile")
+    private Map<String, TermEnrichment> enrichmentProfile;
+    private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
-    @JsonProperty("enrichment_profile_shock_id")
-    public String getEnrichmentProfileShockId() {
-        return enrichmentProfileShockId;
+    @JsonProperty("enrichment_profile")
+    public Map<String, TermEnrichment> getEnrichmentProfile() {
+        return enrichmentProfile;
     }
 
-    @JsonProperty("enrichment_profile_shock_id")
-    public void setEnrichmentProfileShockId(String enrichmentProfileShockId) {
-        this.enrichmentProfileShockId = enrichmentProfileShockId;
+    @JsonProperty("enrichment_profile")
+    public void setEnrichmentProfile(Map<String, TermEnrichment> enrichmentProfile) {
+        this.enrichmentProfile = enrichmentProfile;
     }
 
-    public EnrichOnthologyOutput withEnrichmentProfileShockId(String enrichmentProfileShockId) {
-        this.enrichmentProfileShockId = enrichmentProfileShockId;
+    public EnrichOnthologyOutput withEnrichmentProfile(Map<String, TermEnrichment> enrichmentProfile) {
+        this.enrichmentProfile = enrichmentProfile;
         return this;
     }
 
     @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
+    public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
     @JsonAnySetter
-    public void setAdditionalProperties(String name, Object value) {
+    public void setAdditionalProperties(java.lang.String name, Object value) {
         this.additionalProperties.put(name, value);
     }
 
     @Override
-    public String toString() {
-        return ((((("EnrichOnthologyOutput"+" [enrichmentProfileShockId=")+ enrichmentProfileShockId)+", additionalProperties=")+ additionalProperties)+"]");
+    public java.lang.String toString() {
+        return ((((("EnrichOnthologyOutput"+" [enrichmentProfile=")+ enrichmentProfile)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

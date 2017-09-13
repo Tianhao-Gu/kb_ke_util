@@ -16,35 +16,34 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: BuildBiclustersOutput</p>
  * <pre>
  * Ouput of the build_biclusters function
- * shock_id_list: list of the id of the shock node where the zipped JSON biclustering info output is stored
- * JSON format:
- * ["gene_id_1", "gene_id_2", "gene_id_3"]
+ * biclusters: list of biclusters
+ *             e.g. [["gene_id_1", "gene_id_2"], ["gene_id_3"]]
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "shock_id_list"
+    "biclusters"
 })
 public class BuildBiclustersOutput {
 
-    @JsonProperty("shock_id_list")
-    private List<String> shockIdList;
+    @JsonProperty("biclusters")
+    private List<List<String>> biclusters;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
-    @JsonProperty("shock_id_list")
-    public List<String> getShockIdList() {
-        return shockIdList;
+    @JsonProperty("biclusters")
+    public List<List<String>> getBiclusters() {
+        return biclusters;
     }
 
-    @JsonProperty("shock_id_list")
-    public void setShockIdList(List<String> shockIdList) {
-        this.shockIdList = shockIdList;
+    @JsonProperty("biclusters")
+    public void setBiclusters(List<List<String>> biclusters) {
+        this.biclusters = biclusters;
     }
 
-    public BuildBiclustersOutput withShockIdList(List<String> shockIdList) {
-        this.shockIdList = shockIdList;
+    public BuildBiclustersOutput withBiclusters(List<List<String>> biclusters) {
+        this.biclusters = biclusters;
         return this;
     }
 
@@ -60,7 +59,7 @@ public class BuildBiclustersOutput {
 
     @Override
     public java.lang.String toString() {
-        return ((((("BuildBiclustersOutput"+" [shockIdList=")+ shockIdList)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((("BuildBiclustersOutput"+" [biclusters=")+ biclusters)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

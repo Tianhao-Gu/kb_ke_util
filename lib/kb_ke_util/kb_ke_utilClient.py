@@ -174,10 +174,9 @@ class kb_ke_util(object):
            parameter "linkage_method" of String, parameter
            "fcluster_criterion" of String
         :returns: instance of type "BuildBiclustersOutput" (Ouput of the
-           build_biclusters function shock_id_list: list of the id of the
-           shock node where the zipped JSON biclustering info output is
-           stored JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]) ->
-           structure: parameter "shock_id_list" of list of String
+           build_biclusters function biclusters: list of biclusters e.g.
+           [["gene_id_1", "gene_id_2"], ["gene_id_3"]]) -> structure:
+           parameter "biclusters" of list of list of String
         """
         return self._client.call_method(
             'kb_ke_util.build_biclusters',
@@ -187,23 +186,25 @@ class kb_ke_util(object):
         """
         enrich_onthology: run GO term enrichment analysis
         :param params: instance of type "EnrichOnthologyParams" (Input of the
-           enrich_onthology function sample_set_shock_id: shock node id where
-           the zipped JSON biclustering info output is stored JSON format:
-           ["gene_id_1", "gene_id_2", "gene_id_3"] entity_term_set: entity
-           terms dict structure where global GO term and gene_ids are stored
-           e.g. {'gene_id_1': ['go_term_1', 'go_term_2']} Optional arguments:
-           propagation: includes is_a relationship to all go terms (default
-           is 0)) -> structure: parameter "sample_set_shock_id" of String,
-           parameter "entity_term_set" of mapping from type "entity_guid" to
-           type "assigned_term_guids" -> list of String, parameter
-           "propagation" of type "boolean" (A boolean - 0 for false, 1 for
-           true. @range (0, 1))
+           enrich_onthology function sample_set: list of gene_ids in
+           clustering e.g. ["gene_id_1", "gene_id_2", "gene_id_3"]
+           entity_term_set: entity terms dict structure where global GO term
+           and gene_ids are stored e.g. {"gene_id_1": ["go_term_1",
+           "go_term_2"]} Optional arguments: propagation: includes is_a
+           relationship to all go terms (default is 0)) -> structure:
+           parameter "sample_set" of list of String, parameter
+           "entity_term_set" of mapping from type "entity_guid" to type
+           "assigned_term_guids" -> list of String, parameter "propagation"
+           of type "boolean" (A boolean - 0 for false, 1 for true. @range (0,
+           1))
         :returns: instance of type "EnrichOnthologyOutput" (Ouput of the
-           enrich_onthology function enrichment_profile_shock_id: shock node
-           where the zipped JSON enrichment info output is stored JSON
-           format: {"go_term_1": {"sample_count": 10, "total_count": 20,
-           "p_value": 0.1, "ontology_type": "P"}}) -> structure: parameter
-           "enrichment_profile_shock_id" of String
+           enrich_onthology function enrichment_profile: dict structure
+           stores enrichment info e.g. {"go_term_1": {"sample_count": 10,
+           "total_count": 20, "p_value": 0.1, "ontology_type": "P"}}) ->
+           structure: parameter "enrichment_profile" of mapping from type
+           "term_guid" to type "TermEnrichment" -> structure: parameter
+           "sample_count" of Long, parameter "total_count" of Long, parameter
+           "expected_count" of Long, parameter "p_value" of Double
         """
         return self._client.call_method(
             'kb_ke_util.enrich_onthology',
