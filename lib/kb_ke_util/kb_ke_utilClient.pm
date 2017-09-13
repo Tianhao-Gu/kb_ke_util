@@ -515,7 +515,7 @@ BuildBiclustersParams is a reference to a hash where the following keys are defi
 	fcluster_criterion has a value which is a string
 obj_ref is a string
 BuildBiclustersOutput is a reference to a hash where the following keys are defined:
-	shock_id_list has a value which is a reference to a list where each element is a string
+	biclusters has a value which is a reference to a list where each element is a reference to a list where each element is a string
 
 </pre>
 
@@ -533,7 +533,7 @@ BuildBiclustersParams is a reference to a hash where the following keys are defi
 	fcluster_criterion has a value which is a string
 obj_ref is a string
 BuildBiclustersOutput is a reference to a hash where the following keys are defined:
-	shock_id_list has a value which is a reference to a list where each element is a string
+	biclusters has a value which is a reference to a list where each element is a reference to a list where each element is a string
 
 
 =end text
@@ -608,14 +608,20 @@ build_biclusters: build biclusters and store result feature sets as JSON into sh
 $params is a kb_ke_util.EnrichOnthologyParams
 $returnVal is a kb_ke_util.EnrichOnthologyOutput
 EnrichOnthologyParams is a reference to a hash where the following keys are defined:
-	sample_set_shock_id has a value which is a string
+	sample_set has a value which is a reference to a list where each element is a string
 	entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
 	propagation has a value which is a kb_ke_util.boolean
 entity_guid is a string
 assigned_term_guids is a reference to a list where each element is a string
 boolean is an int
 EnrichOnthologyOutput is a reference to a hash where the following keys are defined:
-	enrichment_profile_shock_id has a value which is a string
+	enrichment_profile has a value which is a reference to a hash where the key is a kb_ke_util.term_guid and the value is a kb_ke_util.TermEnrichment
+term_guid is a string
+TermEnrichment is a reference to a hash where the following keys are defined:
+	sample_count has a value which is an int
+	total_count has a value which is an int
+	expected_count has a value which is an int
+	p_value has a value which is a float
 
 </pre>
 
@@ -626,14 +632,20 @@ EnrichOnthologyOutput is a reference to a hash where the following keys are defi
 $params is a kb_ke_util.EnrichOnthologyParams
 $returnVal is a kb_ke_util.EnrichOnthologyOutput
 EnrichOnthologyParams is a reference to a hash where the following keys are defined:
-	sample_set_shock_id has a value which is a string
+	sample_set has a value which is a reference to a list where each element is a string
 	entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
 	propagation has a value which is a kb_ke_util.boolean
 entity_guid is a string
 assigned_term_guids is a reference to a list where each element is a string
 boolean is an int
 EnrichOnthologyOutput is a reference to a hash where the following keys are defined:
-	enrichment_profile_shock_id has a value which is a string
+	enrichment_profile has a value which is a reference to a hash where the key is a kb_ke_util.term_guid and the value is a kb_ke_util.TermEnrichment
+term_guid is a string
+TermEnrichment is a reference to a hash where the following keys are defined:
+	sample_count has a value which is an int
+	total_count has a value which is an int
+	expected_count has a value which is an int
+	p_value has a value which is a float
 
 
 =end text
@@ -1270,10 +1282,8 @@ fcluster_criterion has a value which is a string
 =item Description
 
 Ouput of the build_biclusters function
-shock_id_list: list of the id of the shock node where the zipped JSON biclustering info output is stored
-
-JSON format:
-["gene_id_1", "gene_id_2", "gene_id_3"]
+biclusters: list of biclusters
+            e.g. [["gene_id_1", "gene_id_2"], ["gene_id_3"]]
 
 
 =item Definition
@@ -1282,7 +1292,7 @@ JSON format:
 
 <pre>
 a reference to a hash where the following keys are defined:
-shock_id_list has a value which is a reference to a list where each element is a string
+biclusters has a value which is a reference to a list where each element is a reference to a list where each element is a string
 
 </pre>
 
@@ -1291,7 +1301,7 @@ shock_id_list has a value which is a reference to a list where each element is a
 =begin text
 
 a reference to a hash where the following keys are defined:
-shock_id_list has a value which is a reference to a list where each element is a string
+biclusters has a value which is a reference to a list where each element is a reference to a list where each element is a string
 
 
 =end text
@@ -1352,6 +1362,68 @@ a reference to a list where each element is a string
 
 
 
+=head2 term_guid
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 TermEnrichment
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+sample_count has a value which is an int
+total_count has a value which is an int
+expected_count has a value which is an int
+p_value has a value which is a float
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+sample_count has a value which is an int
+total_count has a value which is an int
+expected_count has a value which is an int
+p_value has a value which is a float
+
+
+=end text
+
+=back
+
+
+
 =head2 EnrichOnthologyParams
 
 =over 4
@@ -1361,10 +1433,10 @@ a reference to a list where each element is a string
 =item Description
 
 Input of the enrich_onthology function
-sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
-                     JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+sample_set: list of gene_ids in clustering
+            e.g. ["gene_id_1", "gene_id_2", "gene_id_3"]
 entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
-                 e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
+                 e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
 
 Optional arguments:
 propagation: includes is_a relationship to all go terms (default is 0)
@@ -1376,7 +1448,7 @@ propagation: includes is_a relationship to all go terms (default is 0)
 
 <pre>
 a reference to a hash where the following keys are defined:
-sample_set_shock_id has a value which is a string
+sample_set has a value which is a reference to a list where each element is a string
 entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
 propagation has a value which is a kb_ke_util.boolean
 
@@ -1387,7 +1459,7 @@ propagation has a value which is a kb_ke_util.boolean
 =begin text
 
 a reference to a hash where the following keys are defined:
-sample_set_shock_id has a value which is a string
+sample_set has a value which is a reference to a list where each element is a string
 entity_term_set has a value which is a reference to a hash where the key is a kb_ke_util.entity_guid and the value is a kb_ke_util.assigned_term_guids
 propagation has a value which is a kb_ke_util.boolean
 
@@ -1407,13 +1479,11 @@ propagation has a value which is a kb_ke_util.boolean
 =item Description
 
 Ouput of the enrich_onthology function
-enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output is stored
-
-JSON format:
-{"go_term_1": {"sample_count": 10,
-               "total_count": 20,
-               "p_value": 0.1,
-               "ontology_type": "P"}}
+enrichment_profile: dict structure stores enrichment info
+                    e.g. {"go_term_1": {"sample_count": 10,
+                                        "total_count": 20,
+                                        "p_value": 0.1,
+                                        "ontology_type": "P"}}
 
 
 =item Definition
@@ -1422,7 +1492,7 @@ JSON format:
 
 <pre>
 a reference to a hash where the following keys are defined:
-enrichment_profile_shock_id has a value which is a string
+enrichment_profile has a value which is a reference to a hash where the key is a kb_ke_util.term_guid and the value is a kb_ke_util.TermEnrichment
 
 </pre>
 
@@ -1431,7 +1501,7 @@ enrichment_profile_shock_id has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-enrichment_profile_shock_id has a value which is a string
+enrichment_profile has a value which is a reference to a hash where the key is a kb_ke_util.term_guid and the value is a kb_ke_util.TermEnrichment
 
 
 =end text

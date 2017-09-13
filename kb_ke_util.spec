@@ -186,13 +186,11 @@ module kb_ke_util {
   } BuildBiclustersParams;
 
   /* Ouput of the build_biclusters function
-    shock_id_list: list of the id of the shock node where the zipped JSON biclustering info output is stored
-
-    JSON format:
-    ["gene_id_1", "gene_id_2", "gene_id_3"]
+    biclusters: list of biclusters
+                e.g. [["gene_id_1", "gene_id_2"], ["gene_id_3"]]
   */
   typedef structure {
-    list<string> shock_id_list;
+    list<list<string>> biclusters;
   } BuildBiclustersOutput;
 
   /*
@@ -202,34 +200,40 @@ module kb_ke_util {
 
   typedef string entity_guid;
   typedef list<string> assigned_term_guids;
+  typedef string term_guid;
+
+  typedef structure{
+      int sample_count;
+      int total_count;
+      int expected_count;
+      float p_value;
+  } TermEnrichment;
 
   /* Input of the enrich_onthology function
-    sample_set_shock_id: shock node id where the zipped JSON biclustering info output is stored
-                         JSON format: ["gene_id_1", "gene_id_2", "gene_id_3"]
+    sample_set: list of gene_ids in clustering
+                e.g. ["gene_id_1", "gene_id_2", "gene_id_3"]
     entity_term_set: entity terms dict structure where global GO term and gene_ids are stored
-                     e.g. {'gene_id_1': ['go_term_1', 'go_term_2']}
+                     e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
 
     Optional arguments:
     propagation: includes is_a relationship to all go terms (default is 0)
   */
   typedef structure{
-      string sample_set_shock_id;
+      list<string> sample_set;
       mapping<entity_guid, assigned_term_guids> entity_term_set;
 
       boolean propagation;
   } EnrichOnthologyParams;
 
   /* Ouput of the enrich_onthology function
-    enrichment_profile_shock_id: shock node where the zipped JSON enrichment info output is stored
-
-    JSON format:
-    {"go_term_1": {"sample_count": 10,
-                   "total_count": 20,
-                   "p_value": 0.1,
-                   "ontology_type": "P"}}
+    enrichment_profile: dict structure stores enrichment info
+                        e.g. {"go_term_1": {"sample_count": 10,
+                                            "total_count": 20,
+                                            "p_value": 0.1,
+                                            "ontology_type": "P"}}
   */
   typedef structure {
-    string enrichment_profile_shock_id;
+    mapping<term_guid, TermEnrichment> enrichment_profile;
   } EnrichOnthologyOutput;
 
   /*
