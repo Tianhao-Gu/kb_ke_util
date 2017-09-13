@@ -305,10 +305,12 @@ class KnowledgeEngineUtil:
                                                                          len(one_d_values)))
 
         col_size = len(col_ids)
+        empty_string = [None, '', 'null', 'NA', 'None']
         for row_count in range(len(row_ids)):
             start_pos = row_count * col_size
             end_pos = (row_count + 1) * col_size
             row_values = one_d_values[start_pos:end_pos]
+            row_values = [0 if v in empty_string else v for v in row_values]
             two_d_values.append(map(float, row_values))
 
         data_matrix = {'row_ids': row_ids,

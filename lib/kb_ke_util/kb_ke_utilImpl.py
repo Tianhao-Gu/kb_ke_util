@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.0"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "28bb180a884bcfe0a0e747e7728f92e9336b1504"
+    GIT_COMMIT_HASH = "42c1d8072221cd2e1244bc5f0e06c43fb186f527"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER

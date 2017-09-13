@@ -5,8 +5,6 @@ import json  # noqa: F401
 import time
 import requests  # noqa: F401
 import inspect
-import uuid
-import hashlib
 
 
 from os import environ
@@ -123,8 +121,8 @@ class kb_ke_utilTest(unittest.TestCase):
         cls.ndarray_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
         # ci env object
-        # cls.ndarray_ref = '25791/3/49'
-        # cls.ndarray_ref = '25791/2/3'
+        # cls.ndarray_ref = '25895/6/1'
+        # cls.ndarray_ref = '25895/5/1'
 
     def getWsClient(self):
         return self.__class__.wsClient
