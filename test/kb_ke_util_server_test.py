@@ -378,7 +378,8 @@ class kb_ke_utilTest(unittest.TestCase):
     def test_enrich_onthology(self):
         self.start_test()
 
-        sample_set = ['gene_id_1', 'gene_id_2']
+        sample_set = ['gene_id_1', 'gene_id_1', 'gene_id_2', 'gene_id_2']
+        # sample_set = ['gene_id_1', 'gene_id_2']
         # relationship: GO:0006355 -> GO:2001141 -> GO:0050789 -> GO:0065007 -> GO:0008150
         entity_term_set = {'gene_id_1': ['GO:0008150'],
                            'gene_id_2': ['GO:0065007', 'GO:0050789'],
@@ -391,3 +392,6 @@ class kb_ke_utilTest(unittest.TestCase):
         ret = self.getImpl().enrich_onthology(self.ctx, params)[0]
         expect_go_ids = ['GO:0006355', 'GO:2001141', 'GO:0050789', 'GO:0065007', 'GO:0008150']
         self.check_enrich_onthology_output(ret, expect_go_ids)
+
+        enrichment_profile = ret['enrichment_profile']
+        print enrichment_profile
