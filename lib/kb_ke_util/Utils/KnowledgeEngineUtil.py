@@ -568,7 +568,7 @@ class KnowledgeEngineUtil:
 
         for go_id, mapped_gene_ids in go_id_gene_ids_list_map.iteritems():
             # in feature_set matches go_id
-            a = len(set(mapped_gene_ids).intersection(feature_set_ids))
+            a = len([i for i in feature_set_ids if i in mapped_gene_ids])
             # in feature_set doesn't match go_id
             b = len(feature_set_ids) - a
             # not in feature_set matches go_id
