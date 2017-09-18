@@ -28,6 +28,12 @@ class KnowledgeEngineUtil:
 
     CRITERION = ["inconsistent", "distance", "maxclust"]
 
+    ONTOLOGY_HASH = None
+
+    @classmethod
+    def update_ontology_hash(cls, ontology_hash):
+        cls.ONTOLOGY_HASH = ontology_hash
+
     def _mkdir_p(self, path):
         """
         _mkdir_p: make directory for given path
@@ -492,6 +498,9 @@ class KnowledgeEngineUtil:
         """
         _get_ontology_hash: get global ontology info hash
         """
+
+        log('getting ontology data from workspace')
+
         ontology_hash = dict()
         ontologies = self.ws.get_objects([{'workspace': 'KBaseOntology',
                                            'name': 'gene_ontology'},
@@ -564,6 +573,8 @@ class KnowledgeEngineUtil:
         """
         _calculate_go_enrichment: calcualte go enrichment
         """
+        log('start calcualting go enrichment')
+
         go_enrichment = dict()
 
         for go_id, mapped_gene_ids in go_id_gene_ids_list_map.iteritems():
@@ -890,7 +901,14 @@ class KnowledgeEngineUtil:
         propagation = params.get('propagation', False)
 
         go_id_gene_ids_list_map = self._process_entity_term_set(entity_term_set, propagation)
-        ontology_hash = self._get_ontology_hash()
+
+        if self.ONTOLOGY_HASH:
+            log('using cached ontology data')
+            ontology_hash = self.ONTOLOGY_HASH
+        else:
+            log('loading ontology data')
+            ontology_hash = self._get_ontology_hash()
+            self.update_ontology_hash(ontology_hash)
 
         if propagation:
             self._process_parent_go_terms(go_id_gene_ids_list_map, ontology_hash)
