@@ -3,4 +3,4 @@ implemented wrapper method for scipy.spatial.distance.pdist, scipy.cluster.hiera
 
 
 version 1.0.1:
-make it dynamtic service
+make it dynamic service
