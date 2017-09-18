@@ -1,2 +1,6 @@
 version 1.0.0:
 implemented wrapper method for scipy.spatial.distance.pdist, scipy.cluster.hierarchy.linkage, scipy.cluster.hierarchy.fcluster and scipy.cluster.hierarchy.dendrogram
+
+
+version 1.0.1:
+make it dynamtic service
