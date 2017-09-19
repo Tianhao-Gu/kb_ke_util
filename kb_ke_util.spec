@@ -241,4 +241,31 @@ module kb_ke_util {
   */
   funcdef enrich_onthology(EnrichOnthologyParams params) returns (EnrichOnthologyOutput returnVal) authentication required;
 
+  typedef list<string> onthology_pair;
+  typedef string gene_id;
+
+  /* Input of the calc_onthology_dist function
+    onthology_set: dict structure stores mapping of gene_id to paried onthology
+                   e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
+  */
+  typedef structure{
+      mapping<gene_id, onthology_pair> onthology_set;
+  } CalcOnthologyDistParams;
+
+  /* Ouput of the calc_onthology_dist function
+    onthology_dist_set: dict structure stores mapping of gene_id to dist
+                        e.g. {"gene_id_1": 3}
+  */
+  typedef structure {
+    mapping<gene_id, int> onthology_dist_set;
+  } CalcOnthologyDistOutput;
+
+  /*
+  calc_onthology_dist: calculate onthology distance
+                       (sum of steps for each node in onthology_pair travels to 
+                        the nearest common ancestor node)
+                       NOTE: return inf if no common ancestor node found
+  */
+  funcdef calc_onthology_dist(CalcOnthologyDistParams params) returns (CalcOnthologyDistOutput returnVal) authentication required;
+
 };

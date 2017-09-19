@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.1"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "e6551d14c212032ab913897b987de5b55887df0b"
+    GIT_COMMIT_HASH = "46abe2d5e2fb8a4176173ad81e45a87c45024987"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -297,6 +297,42 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method enrich_onthology return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def calc_onthology_dist(self, ctx, params):
+        """
+        calc_onthology_dist: calculate onthology distance
+        (sum of steps for each node in onthology_pair travels to 
+         the nearest common ancestor node)
+        NOTE: return inf if no common ancestor node found
+        :param params: instance of type "CalcOnthologyDistParams" (Input of
+           the calc_onthology_dist function onthology_set: dict structure
+           stores mapping of gene_id to paried onthology e.g. {"gene_id_1":
+           ["go_term_1", "go_term_2"]}) -> structure: parameter
+           "onthology_set" of mapping from type "gene_id" to type
+           "onthology_pair" -> list of String
+        :returns: instance of type "CalcOnthologyDistOutput" (Ouput of the
+           calc_onthology_dist function onthology_dist_set: dict structure
+           stores mapping of gene_id to dist e.g. {"gene_id_1": 3}) ->
+           structure: parameter "onthology_dist_set" of mapping from type
+           "gene_id" to Long
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN calc_onthology_dist
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.calc_onthology_dist(params)
+        #END calc_onthology_dist
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method calc_onthology_dist return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

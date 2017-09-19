@@ -1,7 +1,7 @@
 {
     "name" : "Build biclusters",
-    "short_description" : "Build biclusters and store result feature sets as JSON into shock.",
-    "long_description" : "Build biclusters and store result feature sets as JSON into shock.",
+    "short_description" : "Build biclusters and return list of biclusters.",
+    "long_description" : "Build biclusters and return list of biclusters.",
     "tags" : {
         "categories" : ["KnowledgeEngine"],
         "input": {

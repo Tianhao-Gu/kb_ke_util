@@ -704,6 +704,103 @@ enrich_onthology: run GO term enrichment analysis
     }
 }
  
+
+
+=head2 calc_onthology_dist
+
+  $returnVal = $obj->calc_onthology_dist($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.CalcOnthologyDistParams
+$returnVal is a kb_ke_util.CalcOnthologyDistOutput
+CalcOnthologyDistParams is a reference to a hash where the following keys are defined:
+	onthology_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is a kb_ke_util.onthology_pair
+gene_id is a string
+onthology_pair is a reference to a list where each element is a string
+CalcOnthologyDistOutput is a reference to a hash where the following keys are defined:
+	onthology_dist_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.CalcOnthologyDistParams
+$returnVal is a kb_ke_util.CalcOnthologyDistOutput
+CalcOnthologyDistParams is a reference to a hash where the following keys are defined:
+	onthology_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is a kb_ke_util.onthology_pair
+gene_id is a string
+onthology_pair is a reference to a list where each element is a string
+CalcOnthologyDistOutput is a reference to a hash where the following keys are defined:
+	onthology_dist_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is an int
+
+
+=end text
+
+=item Description
+
+calc_onthology_dist: calculate onthology distance
+(sum of steps for each node in onthology_pair travels to 
+ the nearest common ancestor node)
+NOTE: return inf if no common ancestor node found
+
+=back
+
+=cut
+
+ sub calc_onthology_dist
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function calc_onthology_dist (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to calc_onthology_dist:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'calc_onthology_dist');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.calc_onthology_dist",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'calc_onthology_dist',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method calc_onthology_dist",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'calc_onthology_dist',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -747,16 +844,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'enrich_onthology',
+                method_name => 'calc_onthology_dist',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method enrich_onthology",
+            error => "Error invoking method calc_onthology_dist",
             status_line => $self->{client}->status_line,
-            method_name => 'enrich_onthology',
+            method_name => 'calc_onthology_dist',
         );
     }
 }
@@ -1502,6 +1599,132 @@ enrichment_profile has a value which is a reference to a hash where the key is a
 
 a reference to a hash where the following keys are defined:
 enrichment_profile has a value which is a reference to a hash where the key is a kb_ke_util.term_guid and the value is a kb_ke_util.TermEnrichment
+
+
+=end text
+
+=back
+
+
+
+=head2 onthology_pair
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a list where each element is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a list where each element is a string
+
+=end text
+
+=back
+
+
+
+=head2 gene_id
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 CalcOnthologyDistParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the calc_onthology_dist function
+onthology_set: dict structure stores mapping of gene_id to paried onthology
+               e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+onthology_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is a kb_ke_util.onthology_pair
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+onthology_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is a kb_ke_util.onthology_pair
+
+
+=end text
+
+=back
+
+
+
+=head2 CalcOnthologyDistOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the calc_onthology_dist function
+onthology_dist_set: dict structure stores mapping of gene_id to dist
+                    e.g. {"gene_id_1": 3}
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+onthology_dist_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+onthology_dist_set has a value which is a reference to a hash where the key is a kb_ke_util.gene_id and the value is an int
 
 
 =end text

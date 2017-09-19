@@ -181,6 +181,25 @@ class KnowledgeEngineUtil:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
+    def _validate_calc_onthology_dist_params(self, params):
+        """
+        _validate_calc_onthology_dist_params:
+                validates params passed to calc_onthology_dist method
+        """
+        log('start validating calc_onthology_dist params')
+
+        # check for required parameters
+        for p in ['onthology_set']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
+
+        onthology_set = params.get('onthology_set')
+        len_list = map(len, onthology_set.values())
+
+        if set(len_list) != set([2]):
+            error_msg = 'Input Error: one or more gene is associated with more than 2 GO terms'
+            raise ValueError(error_msg)
+
     def _is_number_string(self, str):
         """
         _is_number_string: check number string
@@ -547,8 +566,11 @@ class KnowledgeEngineUtil:
         _append_go_type: append ontology type info into go_enrichment dict
         """
         for go_id, enrich_info in go_enrichment.iteritems():
-            namespace = ontology_hash[go_id]['namespace']
-            enrich_info.update({'ontology_type': namespace.split("_")[1][0].upper()})
+            if go_id in ontology_hash:
+                namespace = ontology_hash[go_id]['namespace']
+                enrich_info.update({'ontology_type': namespace.split("_")[1][0].upper()})
+            else:
+                enrich_info.update({'ontology_type': None})
 
     def _save_go_enrichment_to_shock(self, go_enrichment):
         """
@@ -594,6 +616,81 @@ class KnowledgeEngineUtil:
                                           'sample_count': a}})
 
         return go_enrichment
+
+    def _calc_pair_term_dist(self, pair_go_terms):
+        """
+        _calc_pair_term_dist: calculate 2 nodes distance
+        """
+
+        log('start calculating GO term distance for {}'.format(pair_go_terms))
+
+        start_term = pair_go_terms[0]
+        end_term = pair_go_terms[1]
+
+        if self.ONTOLOGY_HASH:
+            log('using cached ontology data')
+            ontology_hash = self.ONTOLOGY_HASH
+        else:
+            log('loading ontology data')
+            ontology_hash = self._get_ontology_hash()
+            self.update_ontology_hash(ontology_hash)
+
+        step = 0
+        start_parents = {start_term: step}
+        end_parents = {end_term: step}
+
+        found_common_parent = False
+        common_parent = list()
+        pre_step_start_parent_ids = [start_term]
+        pre_step_end_parent_ids = [end_term]
+
+        while not found_common_parent:
+            step += 1
+            found_start_root = False
+            found_end_root = False
+            current_step_start_parent_ids = list()
+            for pre_step_start_parent_id in pre_step_start_parent_ids:
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                    pre_step_start_parent_id,
+                                                                    is_a_relationship=True,
+                                                                    regulates_relationship=False,
+                                                                    part_of_relationship=False)
+                map(lambda parent_id: start_parents.update({parent_id: step}), 
+                    step_start_parent_ids)
+                current_step_start_parent_ids += step_start_parent_ids
+            if current_step_start_parent_ids:
+                pre_step_start_parent_ids = current_step_start_parent_ids
+            else:
+                found_start_root = True
+
+            current_step_end_parent_ids = list()
+            for pre_step_end_parent_id in pre_step_end_parent_ids:
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                  pre_step_end_parent_id,
+                                                                  is_a_relationship=True,
+                                                                  regulates_relationship=False,
+                                                                  part_of_relationship=False)
+                map(lambda parent_id: end_parents.update({parent_id: step}), 
+                    step_end_parent_ids)
+                current_step_end_parent_ids += step_end_parent_ids
+            if current_step_end_parent_ids:
+                pre_step_end_parent_ids = current_step_end_parent_ids
+            else:
+                found_end_root = True
+
+            common_parent = [val for val in start_parents.keys() if val in end_parents.keys()]
+
+            if common_parent or (found_start_root and found_end_root):
+                found_common_parent = True
+
+        if common_parent:
+            start_dist = start_parents.get(common_parent[0])
+            end_dist = end_parents.get(common_parent[0])
+            dist = start_dist + end_dist
+        else:
+            dist = float('inf')
+
+        return dist
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -920,5 +1017,35 @@ class KnowledgeEngineUtil:
         self._append_ontology_type(enrichment_profile, ontology_hash)
 
         returnVal = {'enrichment_profile': enrichment_profile}
+
+        return returnVal
+
+    def calc_onthology_dist(self, params):
+        """
+        enrich_onthology: calculate onthology distance
+                          (sum of steps for each node in onthology_pair travels to 
+                           the nearest common ancestor node)
+                          NOTE: return inf if no common ancestor node found
+
+        onthology_set: dict structure stores mapping of gene_id to paried onthology
+                       e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
+
+        return:
+        onthology_dist_set: dict structure stores mapping of gene_id to dist
+                            e.g. {"gene_id_1": 3}
+        """
+
+        log('--->\nrunning calc_onthology_dist')
+
+        self._validate_calc_onthology_dist_params(params)
+
+        onthology_set = params.get('onthology_set')
+
+        onthology_dist_set = dict()
+        for gene_id, pair_go_terms in onthology_set.iteritems():
+            dist = self._calc_pair_term_dist(pair_go_terms)
+            onthology_dist_set.update({gene_id: dist})
+
+        returnVal = {'onthology_dist_set': onthology_dist_set}
 
         return returnVal
