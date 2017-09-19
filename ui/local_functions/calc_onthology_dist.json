@@ -1,0 +1,16 @@
+{
+    "name" : "Calc onthology distance",
+    "short_description" : "Calculate onthology distance.",
+    "long_description" : "Sum of steps for each given node travels to the nearest common ancestor node. NOTE: return inf if no common ancestor node found",
+    "tags" : {
+        "categories" : ["KnowledgeEngine"],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": []
+        }
+    }
+}

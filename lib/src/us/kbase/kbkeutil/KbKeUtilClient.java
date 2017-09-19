@@ -278,6 +278,27 @@ public class KbKeUtilClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: calc_onthology_dist</p>
+     * <pre>
+     * calc_onthology_dist: calculate onthology distance
+     *                      (sum of steps for each node in onthology_pair travels to 
+     *                       the nearest common ancestor node)
+     *                      NOTE: return inf if no common ancestor node found
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.CalcOnthologyDistParams CalcOnthologyDistParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.CalcOnthologyDistOutput CalcOnthologyDistOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CalcOnthologyDistOutput calcOnthologyDist(CalcOnthologyDistParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CalcOnthologyDistOutput>> retType = new TypeReference<List<CalcOnthologyDistOutput>>() {};
+        List<CalcOnthologyDistOutput> res = caller.jsonrpcCall("kb_ke_util.calc_onthology_dist", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};

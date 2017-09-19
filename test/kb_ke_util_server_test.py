@@ -188,6 +188,14 @@ class kb_ke_utilTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
+    def fail_calc_onthology_dist(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().calc_onthology_dist(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def check_run_pdist_output(self, ret):
         self.assertTrue('dist_matrix' in ret)
         self.assertTrue('labels' in ret)
@@ -216,6 +224,12 @@ class kb_ke_utilTest(unittest.TestCase):
 
         enrichment_profile = ret['enrichment_profile']
         self.assertItemsEqual(enrichment_profile.keys(), expect_go_ids)
+
+    def check_calc_onthology_dist_output(self, ret, expect_steps):
+        self.assertTrue('onthology_dist_set' in ret)
+
+        onthology_dist_set = ret['onthology_dist_set']
+        self.assertItemsEqual(onthology_dist_set, expect_steps)
 
     def test_bad_run_pdist_params(self):
         self.start_test()
@@ -395,3 +409,40 @@ class kb_ke_utilTest(unittest.TestCase):
 
         enrichment_profile = ret['enrichment_profile']
         print enrichment_profile
+
+    def test_bad_calc_onthology_dist_params(self):
+        self.start_test()
+        invalidate_params = {'missing_onthology_set': 'onthology_set'}
+        error_msg = '"onthology_set" parameter is required, but missing'
+        self.fail_calc_onthology_dist(invalidate_params, error_msg)
+
+        invalidate_params = {'onthology_set': {'gene_id_1': 
+                                               ['go_term_1', 'go_term_2', 'go_term_3']}}
+        error_msg = 'Input Error: one or more gene is associated with more than 2 GO terms'
+        self.fail_calc_onthology_dist(invalidate_params, error_msg)
+
+    def test_calc_onthology_dist(self):
+        self.start_test()
+        # graph structure:
+        # GO:0008150 <-- GO:0065007 <-- GO:0050789 <-- GO:0050794 <-- GO:0031323
+        #                                          <-- GO:0019222 <-- GO:0031323
+        params = {'onthology_set': {'gene_id_1':
+                                    ['GO:0050794', 'GO:0019222'],
+                                    'gene_id_2':
+                                    ['GO:0031323', 'GO:0050794'],
+                                    'gene_id_3':
+                                    ['GO:0031323', 'GO:0019222'],
+                                    'gene_id_4':
+                                    ['GO:0065007', 'GO:0031323'],
+                                    'gene_id_5':
+                                    ['GO:0031323', 'GO:not_existing'],
+                                    'gene_id_6':
+                                    ['GO:0031323', 'GO:0031323']}}
+        ret = self.getImpl().calc_onthology_dist(self.ctx, params)[0]
+        expect_steps = {'gene_id_1': 2,
+                        'gene_id_2': 1,
+                        'gene_id_3': 1,
+                        'gene_id_4': 3,
+                        'gene_id_5': float('inf'),
+                        'gene_id_6': 0}
+        self.check_calc_onthology_dist_output(ret, expect_steps)
