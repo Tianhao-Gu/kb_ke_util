@@ -404,7 +404,7 @@ class kb_ke_utilTest(unittest.TestCase):
                   'entity_term_set': entity_term_set,
                   'propagation': 1}
         ret = self.getImpl().enrich_onthology(self.ctx, params)[0]
-        expect_go_ids = ['GO:0006355', 'GO:2001141', 'GO:0050789', 'GO:0065007', 'GO:0008150']
+        expect_go_ids = ['GO:0050789', 'GO:0065007', 'GO:0008150']
         self.check_enrich_onthology_output(ret, expect_go_ids)
 
         enrichment_profile = ret['enrichment_profile']

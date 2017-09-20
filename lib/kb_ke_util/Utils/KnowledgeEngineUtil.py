@@ -602,18 +602,24 @@ class KnowledgeEngineUtil:
         for go_id, mapped_gene_ids in go_id_gene_ids_list_map.iteritems():
             # in feature_set matches go_id
             a = len([i for i in feature_set_ids if i in mapped_gene_ids])
-            # in feature_set doesn't match go_id
-            b = len(feature_set_ids) - a
-            # not in feature_set matches go_id
-            c = len(mapped_gene_ids) - a
-            # not in feature_set doesn't match go_id
-            d = len(total_feature_ids) - len(feature_set_ids) - c
 
-            raw_p_value = fisher.pvalue(a, b, c, d).two_tail
+            if a:
+                # in feature_set doesn't match go_id
+                b = len(feature_set_ids) - a
+                # not in feature_set matches go_id
+                total_count = len(mapped_gene_ids)
+                c = total_count - a
+                # not in feature_set doesn't match go_id
+                d = len(total_feature_ids) - len(feature_set_ids) - c
 
-            go_enrichment.update({go_id: {'raw_p_value': raw_p_value,
-                                          'total_count': len(mapped_gene_ids),
-                                          'sample_count': a}})
+                raw_p_value = fisher.pvalue(a, b, c, d).two_tail
+
+                expected_count = int(round(total_count * raw_p_value))
+
+                go_enrichment.update({go_id: {'p_value': raw_p_value,
+                                              'total_count': total_count,
+                                              'sample_count': a,
+                                              'expected_count': expected_count}})
 
         return go_enrichment
 
