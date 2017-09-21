@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.1"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "ab6df8cda179027005ed1ce818efbaa25cb98b26"
+    GIT_COMMIT_HASH = "adc676b3a5fb970bbc904500422b2634c58eff21"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -33,7 +33,7 @@ class kb_ke_util:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
         self.config = config
-        self.config['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
+        # self.config['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
         #END_CONSTRUCTOR
         pass
 
@@ -74,6 +74,8 @@ class kb_ke_util:
             if isinstance(value, basestring):
                 params[key] = value.strip()
 
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.run_pdist(params)
         #END run_pdist
@@ -110,6 +112,8 @@ class kb_ke_util:
         for key, value in params.iteritems():
             if isinstance(value, basestring):
                 params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
 
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.run_linkage(params)
@@ -158,6 +162,8 @@ class kb_ke_util:
             if isinstance(value, basestring):
                 params[key] = value.strip()
 
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.run_fcluster(params)
         #END run_fcluster
@@ -195,6 +201,8 @@ class kb_ke_util:
         for key, value in params.iteritems():
             if isinstance(value, basestring):
                 params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
 
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.run_dendrogram(params)
@@ -247,6 +255,8 @@ class kb_ke_util:
             if isinstance(value, basestring):
                 params[key] = value.strip()
 
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.build_biclusters(params)
         #END build_biclusters
@@ -289,6 +299,8 @@ class kb_ke_util:
             if isinstance(value, basestring):
                 params[key] = value.strip()
 
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.enrich_onthology(params)
         #END enrich_onthology
@@ -324,6 +336,8 @@ class kb_ke_util:
         for key, value in params.iteritems():
             if isinstance(value, basestring):
                 params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
 
         ke_util = KnowledgeEngineUtil(self.config)
         returnVal = ke_util.calc_onthology_dist(params)
