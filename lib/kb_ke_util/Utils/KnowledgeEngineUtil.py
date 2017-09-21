@@ -377,47 +377,6 @@ class KnowledgeEngineUtil:
 
         return flat_cluster
 
-    def _save_clusters_to_shock(self, flat_cluster):
-        """
-        _save_clusters_to_shock: save clusters as JSON to shock
-        """
-        shock_id_list = list()
-
-        for key, elements in flat_cluster.iteritems():
-            output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-            self._mkdir_p(output_directory)
-
-            file_name = 'cluster_{}.JSON'.format(key)
-            file_path = os.path.join(output_directory, file_name)
-
-            with open(file_path, 'w') as outfile:
-                json.dump(elements, outfile)
-
-            shock_id = self.dfu.file_to_shock({'file_path': file_path,
-                                               'pack': 'zip'})['shock_id']
-            shock_id_list.append(shock_id)
-
-        return shock_id_list
-
-    def _get_shock_node_sample_set(self, sample_set_shock_id):
-        """
-        _get_shock_node_sample_set: get feature set ids from shock node
-        """
-
-        zipdir = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(zipdir)
-        self.dfu.shock_to_file({'shock_id': sample_set_shock_id,
-                                'unpack': 'unpack',
-                                'file_path': zipdir})
-
-        result_files = os.listdir(zipdir)
-        json_file = [file_name for file_name in result_files if file_name.endswith('.JSON')][0]
-
-        json_data = open(os.path.join(zipdir, json_file)).read()
-        feature_set_ids = json.loads(json_data)
-        
-        return feature_set_ids
-
     def _process_entity_term_set(self, entity_term_set, propagation):
         """
         _process_entity_term_set: process entity_term_set and get global go_id: [genes_ids] map
@@ -572,24 +531,6 @@ class KnowledgeEngineUtil:
             else:
                 enrich_info.update({'ontology_type': None})
 
-    def _save_go_enrichment_to_shock(self, go_enrichment):
-        """
-        _save_go_enrichment_to_shock: save go_enrichment hash as JSON to shock
-        """
-        output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(output_directory)
-
-        file_name = 'go_enrichment.JSON'
-        file_path = os.path.join(output_directory, file_name)
-
-        with open(file_path, 'w') as outfile:
-            json.dump(go_enrichment, outfile)
-
-        shock_id = self.dfu.file_to_shock({'file_path': file_path,
-                                           'pack': 'zip'})['shock_id']
-
-        return shock_id
-
     def _calculate_go_enrichment(self, go_id_gene_ids_list_map, feature_set_ids, 
                                  total_feature_ids):
         """
@@ -700,14 +641,12 @@ class KnowledgeEngineUtil:
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
-        self.callback_url = config['SDK_CALLBACK_URL']
         self.token = config['KB_AUTH_TOKEN']
         self.shock_url = config['shock-url']
         self.srv_wiz_url = config['srv-wiz-url']
         self.scratch = config['scratch']
 
         self.ws = Workspace(self.ws_url, token=self.token)
-        self.dfu = DataFileUtil(self.callback_url)
 
     def run_pdist(self, params):
         """
