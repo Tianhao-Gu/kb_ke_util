@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.1"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "adc676b3a5fb970bbc904500422b2634c58eff21"
+    GIT_COMMIT_HASH = "71f75c450823dce39884c91e17ef4269e6bd205b"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -346,6 +346,45 @@ class kb_ke_util:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method calc_onthology_dist return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def calc_weighted_onthology_dist(self, ctx, params):
+        """
+        calc_weighted_onthology_dist: calculate weighted onthology distance
+        (edges are weighted from root to leaves
+         root edges are weighted 1/2
+         each child's edge weights half of its parent's edge)
+        NOTE: return inf if no common ancestor node found
+        :param params: instance of type "CalcOnthologyDistParams" (Input of
+           the calc_onthology_dist function onthology_set: dict structure
+           stores mapping of gene_id to paried onthology e.g. {"gene_id_1":
+           ["go_term_1", "go_term_2"]}) -> structure: parameter
+           "onthology_set" of mapping from type "gene_id" to type
+           "onthology_pair" -> list of String
+        :returns: instance of type "CalcOnthologyDistOutput" (Ouput of the
+           calc_onthology_dist function onthology_dist_set: dict structure
+           stores mapping of gene_id to dist e.g. {"gene_id_1": 3}) ->
+           structure: parameter "onthology_dist_set" of mapping from type
+           "gene_id" to Long
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN calc_weighted_onthology_dist
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.calc_weighted_onthology_dist(params)
+        #END calc_weighted_onthology_dist
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method calc_weighted_onthology_dist return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

@@ -268,4 +268,13 @@ module kb_ke_util {
   */
   funcdef calc_onthology_dist(CalcOnthologyDistParams params) returns (CalcOnthologyDistOutput returnVal) authentication required;
 
+  /*
+  calc_weighted_onthology_dist: calculate weighted onthology distance
+                                (edges are weighted from root to leaves
+                                 root edges are weighted 1/2
+                                 each child's edge weights half of its parent's edge)
+                                NOTE: return inf if no common ancestor node found
+  */
+  funcdef calc_weighted_onthology_dist(CalcOnthologyDistParams params) returns (CalcOnthologyDistOutput returnVal) authentication required;
+
 };

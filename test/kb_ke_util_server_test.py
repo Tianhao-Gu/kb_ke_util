@@ -20,6 +20,7 @@ from kb_ke_util.kb_ke_utilImpl import kb_ke_util
 from kb_ke_util.kb_ke_utilServer import MethodContext
 from kb_ke_util.authclient import KBaseAuth as _KBaseAuth
 from DataFileUtil.DataFileUtilClient import DataFileUtil
+from kb_ke_util.Utils.KnowledgeEngineUtil import KnowledgeEngineUtil
 
 
 class kb_ke_utilTest(unittest.TestCase):
@@ -56,6 +57,8 @@ class kb_ke_utilTest(unittest.TestCase):
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
         cls.dfu = DataFileUtil(cls.callback_url)
+        cls.cfg['KB_AUTH_TOKEN'] = cls.token
+        cls.ke_util = KnowledgeEngineUtil(cls.cfg)
 
         suffix = int(time.time() * 1000)
         cls.wsName = "test_kb_ke_apps_" + str(suffix)
@@ -446,3 +449,42 @@ class kb_ke_utilTest(unittest.TestCase):
                         'gene_id_5': float('inf'),
                         'gene_id_6': 0}
         self.check_calc_onthology_dist_output(ret, expect_steps)
+
+    def test_compute_weighted_edges(self):
+        # root: [u'GO:0003674', u'GO:0008150', u'GO:0005575']
+        # leave: GO:0000432
+        roots = ['GO:0003674', 'GO:0008150', 'GO:0005575']
+        leave = 'GO:0000432'
+        weighted_edges = self.ke_util._compute_weighted_edges()
+
+        self.assertTrue(leave not in weighted_edges)
+
+        for root in roots:
+            weights = list(set(weighted_edges[root].values()))
+            self.assertEqual(len(weights), 1)
+            self.assertEqual(weights[0], 0.5)
+
+        first_children = weighted_edges[roots[1]].keys()
+
+        for first_child in first_children:
+            weights = list(set(weighted_edges[first_child].values()))
+            self.assertEqual(len(weights), 1)
+            self.assertEqual(weights[0], 0.25)
+
+    def test_calc_weighted_onthology_dist(self):
+        self.start_test()
+        # graph structure:
+        # GO:0008150 <-0.5- GO:0065007 <-0.25- GO:0050789 <-0.125- GO:0006792
+        #            <-0.5- GO:0099531 <-0.25- GO:0007269
+        params = {'onthology_set': {'gene_id_1': ['GO:0065007', 'GO:0099531'],
+                                    'gene_id_2': ['GO:0050789', 'GO:0008150'],
+                                    'gene_id_3': ['GO:0006792', 'GO:0007269']}}
+
+        ret = self.getImpl().calc_weighted_onthology_dist(self.ctx, params)[0]
+
+        expected_dist = {'gene_id_1': 0.5,
+                         'gene_id_2': 0.375,
+                         'gene_id_3': 0.8125}
+
+        onthology_dist_set = ret['onthology_dist_set']
+        self.assertItemsEqual(onthology_dist_set, expected_dist)

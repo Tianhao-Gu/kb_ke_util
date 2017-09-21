@@ -232,6 +232,29 @@ class kb_ke_util(object):
             'kb_ke_util.calc_onthology_dist',
             [params], self._service_ver, context)
 
+    def calc_weighted_onthology_dist(self, params, context=None):
+        """
+        calc_weighted_onthology_dist: calculate weighted onthology distance
+        (edges are weighted from root to leaves
+         root edges are weighted 1/2
+         each child's edge weights half of its parent's edge)
+        NOTE: return inf if no common ancestor node found
+        :param params: instance of type "CalcOnthologyDistParams" (Input of
+           the calc_onthology_dist function onthology_set: dict structure
+           stores mapping of gene_id to paried onthology e.g. {"gene_id_1":
+           ["go_term_1", "go_term_2"]}) -> structure: parameter
+           "onthology_set" of mapping from type "gene_id" to type
+           "onthology_pair" -> list of String
+        :returns: instance of type "CalcOnthologyDistOutput" (Ouput of the
+           calc_onthology_dist function onthology_dist_set: dict structure
+           stores mapping of gene_id to dist e.g. {"gene_id_1": 3}) ->
+           structure: parameter "onthology_dist_set" of mapping from type
+           "gene_id" to Long
+        """
+        return self._client.call_method(
+            'kb_ke_util.calc_weighted_onthology_dist',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('kb_ke_util.status',
                                         [], self._service_ver, context)
