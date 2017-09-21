@@ -361,6 +361,10 @@ class Application(object):
                              name='kb_ke_util.calc_onthology_dist',
                              types=[dict])
         self.method_authentication['kb_ke_util.calc_onthology_dist'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_ke_util.calc_weighted_onthology_dist,
+                             name='kb_ke_util.calc_weighted_onthology_dist',
+                             types=[dict])
+        self.method_authentication['kb_ke_util.calc_weighted_onthology_dist'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_ke_util.status,
                              name='kb_ke_util.status',
                              types=[dict])

@@ -10,7 +10,6 @@ import scipy.cluster.hierarchy as hier
 from matplotlib import pyplot as plt
 
 from Workspace.WorkspaceClient import Workspace as Workspace
-from DataFileUtil.DataFileUtilClient import DataFileUtil
 
 
 def log(message, prefix_newline=False):
@@ -29,10 +28,15 @@ class KnowledgeEngineUtil:
     CRITERION = ["inconsistent", "distance", "maxclust"]
 
     ONTOLOGY_HASH = None
-
+    WEIGHTED_EDGES = None
+    
     @classmethod
     def update_ontology_hash(cls, ontology_hash):
         cls.ONTOLOGY_HASH = ontology_hash
+
+    @classmethod
+    def update_weighted_edges(cls, weighted_edges):
+        cls.WEIGHTED_EDGES = weighted_edges
 
     def _mkdir_p(self, path):
         """
@@ -564,6 +568,95 @@ class KnowledgeEngineUtil:
 
         return go_enrichment
 
+    def _calc_weighted_pair_term_dist(self, pair_go_terms):
+        """
+        _calc_weighted_pair_term_dist: calculate weighted 2 nodes distance
+        """
+
+        log('start calculating GO term distance for {}'.format(pair_go_terms))
+
+        start_term = pair_go_terms[0]
+        end_term = pair_go_terms[1]
+
+        if self.ONTOLOGY_HASH:
+            log('using cached ontology data')
+            ontology_hash = self.ONTOLOGY_HASH
+        else:
+            log('loading ontology data')
+            ontology_hash = self._get_ontology_hash()
+            self.update_ontology_hash(ontology_hash)
+
+        if self.WEIGHTED_EDGES:
+            log('using cached weighted edges data')
+            weighted_edges = self.WEIGHTED_EDGES
+        else:
+            log('loading weighted edges data')
+            weighted_edges = self._compute_weighted_edges()
+            self.update_weighted_edges(weighted_edges)
+
+        step = 0
+        start_parents = {start_term: step}
+        end_parents = {end_term: step}
+
+        found_common_parent = False
+        common_parent = list()
+        pre_step_start_parent_ids = [start_term]
+        pre_step_end_parent_ids = [end_term]
+
+        while not found_common_parent:
+            step += 1
+            found_start_root = False
+            found_end_root = False
+            current_step_start_parent_ids = list()
+            for pre_step_start_parent_id in pre_step_start_parent_ids:
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                    pre_step_start_parent_id,
+                                                                    is_a_relationship=True,
+                                                                    regulates_relationship=False,
+                                                                    part_of_relationship=False)
+
+                for step_start_parent_id in step_start_parent_ids:
+                    weighted_edge = weighted_edges[step_start_parent_id][pre_step_start_parent_id]
+                    current_weight = start_parents[pre_step_start_parent_id]
+                    start_parents.update({step_start_parent_id: current_weight + weighted_edge})
+                current_step_start_parent_ids += step_start_parent_ids
+            if current_step_start_parent_ids:
+                pre_step_start_parent_ids = current_step_start_parent_ids
+            else:
+                found_start_root = True
+
+            current_step_end_parent_ids = list()
+            for pre_step_end_parent_id in pre_step_end_parent_ids:
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                  pre_step_end_parent_id,
+                                                                  is_a_relationship=True,
+                                                                  regulates_relationship=False,
+                                                                  part_of_relationship=False)
+
+                for step_end_parent_id in step_end_parent_ids:
+                    weighted_edge = weighted_edges[step_end_parent_id][pre_step_end_parent_id]
+                    current_weight = end_parents[pre_step_end_parent_id]
+                    end_parents.update({step_end_parent_id: current_weight + weighted_edge})
+                current_step_end_parent_ids += step_end_parent_ids
+            if current_step_end_parent_ids:
+                pre_step_end_parent_ids = current_step_end_parent_ids
+            else:
+                found_end_root = True
+
+            common_parent = [val for val in start_parents.keys() if val in end_parents.keys()]
+
+            if common_parent or (found_start_root and found_end_root):
+                found_common_parent = True
+
+        if common_parent:
+            start_dist = start_parents.get(common_parent[0])
+            end_dist = end_parents.get(common_parent[0])
+            dist = (start_dist + end_dist) / 2.0
+        else:
+            dist = float('inf')
+
+        return dist
+
     def _calc_pair_term_dist(self, pair_go_terms):
         """
         _calc_pair_term_dist: calculate 2 nodes distance
@@ -638,6 +731,63 @@ class KnowledgeEngineUtil:
             dist = float('inf')
 
         return dist
+
+    def _compute_weighted_edges(self):
+        """
+        _compute_top_down_tree: given nodes only knows immediate parents, computes top to down tree
+        """
+
+        log('generating weighted edges')
+
+        if self.ONTOLOGY_HASH:
+            log('using cached ontology data')
+            ontology_hash = self.ONTOLOGY_HASH
+        else:
+            log('loading ontology data')
+            ontology_hash = self._get_ontology_hash()
+            self.update_ontology_hash(ontology_hash)
+
+        root_terms = list()
+        weighted_edges = dict()
+
+        for ontology_term in ontology_hash.keys():
+            parent_terms = self._get_immediate_parents(ontology_hash, ontology_term, 
+                                                       is_a_relationship=True, 
+                                                       regulates_relationship=False, 
+                                                       part_of_relationship=False)
+            if parent_terms:
+                for parent_term in parent_terms:
+                    if parent_term in weighted_edges:
+                        temp_children = weighted_edges[parent_term]
+                        temp_children.update({ontology_term: 1})
+                    else:
+                        weighted_edges.update({parent_term: {ontology_term: 1}})
+            else:
+                root_terms.append(ontology_term)
+
+        true_root_terms = list()
+        for root_term in root_terms:
+            if root_term in weighted_edges:
+                true_root_terms.append(root_term)
+
+        for root_term in true_root_terms:
+            self._update_weighted_edges(weighted_edges, root_term, 1.0)
+
+        return weighted_edges
+
+    def _update_weighted_edges(self, weighted_edges, parent_term, weight):
+        """
+        _update_weighted_edges: update children term weight
+        """
+
+        children = weighted_edges[parent_term].keys()
+
+        for child in children:
+            if child not in weighted_edges:
+                weighted_edges[parent_term][child] = weight / 2.0
+            else:
+                weighted_edges[parent_term][child] = weight / 2.0
+                self._update_weighted_edges(weighted_edges, child, weight / 2.0)
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -989,6 +1139,37 @@ class KnowledgeEngineUtil:
         onthology_dist_set = dict()
         for gene_id, pair_go_terms in onthology_set.iteritems():
             dist = self._calc_pair_term_dist(pair_go_terms)
+            onthology_dist_set.update({gene_id: dist})
+
+        returnVal = {'onthology_dist_set': onthology_dist_set}
+
+        return returnVal
+
+    def calc_weighted_onthology_dist(self, params):
+        """
+        enrich_onthology: calculate weighted onthology distance
+                          (edges are weighted from root to leaves
+                           root edges are weighted 1/2
+                           each child's edge weights half of its parent's edge)
+                          NOTE: return inf if no common ancestor node found
+
+        onthology_set: dict structure stores mapping of gene_id to paried onthology
+                       e.g. {"gene_id_1": ["go_term_1", "go_term_2"]}
+
+        return:
+        onthology_dist_set: dict structure stores mapping of gene_id to dist
+                            e.g. {"gene_id_1": 0.75}
+        """
+
+        log('--->\nrunning calc_weighted_onthology_dist')
+
+        self._validate_calc_onthology_dist_params(params)
+
+        onthology_set = params.get('onthology_set')
+
+        onthology_dist_set = dict()
+        for gene_id, pair_go_terms in onthology_set.iteritems():
+            dist = self._calc_weighted_pair_term_dist(pair_go_terms)
             onthology_dist_set.update({gene_id: dist})
 
         returnVal = {'onthology_dist_set': onthology_dist_set}
