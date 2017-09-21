@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.1"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "5dce27d3e07b629fb4f5d34e5110901be3bf4e47"
+    GIT_COMMIT_HASH = "ab6df8cda179027005ed1ce818efbaa25cb98b26"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -33,7 +33,6 @@ class kb_ke_util:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
         self.config = config
-        self.config['SDK_CALLBACK_URL'] = os.environ['SDK_CALLBACK_URL']
         self.config['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
         #END_CONSTRUCTOR
         pass
