@@ -568,6 +568,78 @@ class KnowledgeEngineUtil:
 
         return go_enrichment
 
+    def _find_comone_parent(self, pair_go_terms):
+        """
+        _find_comone_parent: find common parent of pair_go_terms
+        """
+
+        start_term = pair_go_terms[0]
+        end_term = pair_go_terms[1]
+
+        if start_term == end_term:
+            return start_term
+
+        if self.ONTOLOGY_HASH:
+            log('using cached ontology data')
+            ontology_hash = self.ONTOLOGY_HASH
+        else:
+            log('loading ontology data')
+            ontology_hash = self._get_ontology_hash()
+            self.update_ontology_hash(ontology_hash)
+
+        step = 0
+        start_parents = {start_term: step}
+        end_parents = {end_term: step}
+
+        found_common_parent = False
+        common_parent = list()
+        pre_step_start_parent_ids = [start_term]
+        pre_step_end_parent_ids = [end_term]
+
+        while not found_common_parent:
+            step += 1
+            found_start_root = False
+            found_end_root = False
+            current_step_start_parent_ids = list()
+            for pre_step_start_parent_id in pre_step_start_parent_ids:
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                    pre_step_start_parent_id,
+                                                                    is_a_relationship=True,
+                                                                    regulates_relationship=False,
+                                                                    part_of_relationship=False)
+                map(lambda parent_id: start_parents.update({parent_id: step}), 
+                    step_start_parent_ids)
+                current_step_start_parent_ids += step_start_parent_ids
+            if current_step_start_parent_ids:
+                pre_step_start_parent_ids = current_step_start_parent_ids
+            else:
+                found_start_root = True
+
+            current_step_end_parent_ids = list()
+            for pre_step_end_parent_id in pre_step_end_parent_ids:
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                                                                  pre_step_end_parent_id,
+                                                                  is_a_relationship=True,
+                                                                  regulates_relationship=False,
+                                                                  part_of_relationship=False)
+                map(lambda parent_id: end_parents.update({parent_id: step}), 
+                    step_end_parent_ids)
+                current_step_end_parent_ids += step_end_parent_ids
+            if current_step_end_parent_ids:
+                pre_step_end_parent_ids = current_step_end_parent_ids
+            else:
+                found_end_root = True
+
+            common_parent = [val for val in start_parents.keys() if val in end_parents.keys()]
+
+            if common_parent or (found_start_root and found_end_root):
+                found_common_parent = True
+
+        if common_parent:
+            return common_parent[0]
+        else:
+            return None
+
     def _calc_weighted_pair_term_dist(self, pair_go_terms):
         """
         _calc_weighted_pair_term_dist: calculate weighted 2 nodes distance
@@ -577,6 +649,9 @@ class KnowledgeEngineUtil:
 
         start_term = pair_go_terms[0]
         end_term = pair_go_terms[1]
+
+        if start_term == end_term:
+            return 0
 
         if self.ONTOLOGY_HASH:
             log('using cached ontology data')
@@ -602,11 +677,12 @@ class KnowledgeEngineUtil:
         common_parent = list()
         pre_step_start_parent_ids = [start_term]
         pre_step_end_parent_ids = [end_term]
+        found_start_root = False
+        found_end_root = False
 
         while not found_common_parent:
             step += 1
-            found_start_root = False
-            found_end_root = False
+
             current_step_start_parent_ids = list()
             for pre_step_start_parent_id in pre_step_start_parent_ids:
                 step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
@@ -632,7 +708,6 @@ class KnowledgeEngineUtil:
                                                                   is_a_relationship=True,
                                                                   regulates_relationship=False,
                                                                   part_of_relationship=False)
-
                 for step_end_parent_id in step_end_parent_ids:
                     weighted_edge = weighted_edges[step_end_parent_id][pre_step_end_parent_id]
                     current_weight = end_parents[pre_step_end_parent_id]
@@ -666,6 +741,9 @@ class KnowledgeEngineUtil:
 
         start_term = pair_go_terms[0]
         end_term = pair_go_terms[1]
+
+        if start_term == end_term:
+            return 0
 
         if self.ONTOLOGY_HASH:
             log('using cached ontology data')
@@ -1169,8 +1247,16 @@ class KnowledgeEngineUtil:
 
         onthology_dist_set = dict()
         for gene_id, pair_go_terms in onthology_set.iteritems():
-            dist = self._calc_weighted_pair_term_dist(pair_go_terms)
-            onthology_dist_set.update({gene_id: dist})
+            common_parent = self._find_comone_parent(pair_go_terms)
+            if common_parent:
+                start_go_term = pair_go_terms[0]
+                end_go_term = pair_go_terms[1]
+                start_dist = self._calc_weighted_pair_term_dist([start_go_term, common_parent])
+                end_dist = self._calc_weighted_pair_term_dist([end_go_term, common_parent])
+                dist = start_dist + end_dist
+                onthology_dist_set.update({gene_id: dist})
+            else:
+                onthology_dist_set.update({gene_id: float('inf')})
 
         returnVal = {'onthology_dist_set': onthology_dist_set}
 

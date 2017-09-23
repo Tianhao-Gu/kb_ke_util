@@ -478,13 +478,15 @@ class kb_ke_utilTest(unittest.TestCase):
         #            <-0.5- GO:0099531 <-0.25- GO:0007269
         params = {'onthology_set': {'gene_id_1': ['GO:0065007', 'GO:0099531'],
                                     'gene_id_2': ['GO:0050789', 'GO:0008150'],
-                                    'gene_id_3': ['GO:0006792', 'GO:0007269']}}
+                                    'gene_id_3': ['GO:0006792', 'GO:0007269'],
+                                    'gene_id_4': ['GO:0050789', 'GO:0050789']}}
 
         ret = self.getImpl().calc_weighted_onthology_dist(self.ctx, params)[0]
 
         expected_dist = {'gene_id_1': 0.5,
                          'gene_id_2': 0.375,
-                         'gene_id_3': 0.8125}
+                         'gene_id_3': 0.8125,
+                         'gene_id_4': 0}
 
         onthology_dist_set = ret['onthology_dist_set']
         self.assertItemsEqual(onthology_dist_set, expected_dist)
