@@ -684,35 +684,62 @@ class KnowledgeEngineUtil:
             step += 1
 
             current_step_start_parent_ids = list()
+            current_start_step_dist = dict()
             for pre_step_start_parent_id in pre_step_start_parent_ids:
                 step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
                                                                     pre_step_start_parent_id,
                                                                     is_a_relationship=True,
                                                                     regulates_relationship=False,
                                                                     part_of_relationship=False)
-
+                step_start_parent_ids = list(set(step_start_parent_ids))
                 for step_start_parent_id in step_start_parent_ids:
                     weighted_edge = weighted_edges[step_start_parent_id][pre_step_start_parent_id]
                     current_weight = start_parents[pre_step_start_parent_id]
-                    start_parents.update({step_start_parent_id: current_weight + weighted_edge})
+                    if step_start_parent_id in current_start_step_dist:
+                        current_dist = current_start_step_dist[step_start_parent_id]
+                        if current_dist > current_weight + weighted_edge:
+                            current_start_step_dist.update({step_start_parent_id: 
+                                                            current_weight + weighted_edge})
+                    else:
+                        current_start_step_dist.update({step_start_parent_id: 
+                                                        current_weight + weighted_edge})
                 current_step_start_parent_ids += step_start_parent_ids
+
+            for step_start_parent_id, distance in current_start_step_dist.iteritems():
+                start_parents.update({step_start_parent_id: distance})
+
+            current_step_start_parent_ids = list(set(current_step_start_parent_ids))
             if current_step_start_parent_ids:
                 pre_step_start_parent_ids = current_step_start_parent_ids
             else:
                 found_start_root = True
 
             current_step_end_parent_ids = list()
+            current_end_step_dist = dict()
             for pre_step_end_parent_id in pre_step_end_parent_ids:
                 step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
                                                                   pre_step_end_parent_id,
                                                                   is_a_relationship=True,
                                                                   regulates_relationship=False,
                                                                   part_of_relationship=False)
+                step_end_parent_ids = list(set(step_end_parent_ids))
                 for step_end_parent_id in step_end_parent_ids:
                     weighted_edge = weighted_edges[step_end_parent_id][pre_step_end_parent_id]
                     current_weight = end_parents[pre_step_end_parent_id]
-                    end_parents.update({step_end_parent_id: current_weight + weighted_edge})
+                    if step_end_parent_id in current_end_step_dist:
+                        current_dist = current_end_step_dist[step_end_parent_id]
+                        if current_dist > current_weight + weighted_edge:
+                            current_end_step_dist.update({step_end_parent_id: 
+                                                          current_weight + weighted_edge})
+                    else:
+                        current_end_step_dist.update({step_end_parent_id: 
+                                                      current_weight + weighted_edge})
                 current_step_end_parent_ids += step_end_parent_ids
+
+            for step_end_parent_id, distance in current_end_step_dist.iteritems():
+                end_parents.update({step_end_parent_id: distance})
+
+            current_step_end_parent_ids = list(set(current_step_end_parent_ids))
             if current_step_end_parent_ids:
                 pre_step_end_parent_ids = current_step_end_parent_ids
             else:
