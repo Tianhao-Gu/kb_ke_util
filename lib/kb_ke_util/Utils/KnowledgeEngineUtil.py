@@ -751,9 +751,21 @@ class KnowledgeEngineUtil:
                 found_common_parent = True
 
         if common_parent:
-            start_dist = start_parents.get(common_parent[0])
-            end_dist = end_parents.get(common_parent[0])
-            dist = (start_dist + end_dist) / 2.0
+
+            if len(common_parent) == 1:
+                start_dist = start_parents.get(common_parent[0])
+                end_dist = end_parents.get(common_parent[0])
+                dist = (start_dist + end_dist) / 2.0
+            else:
+                dist = 0
+                for common_par in common_parent:
+                    start_dist = start_parents.get(common_par)
+                    end_dist = end_parents.get(common_par)
+                    tmp_dist = (start_dist + end_dist) / 2.0
+                    if dist and tmp_dist < dist:
+                        dist = tmp_dist
+                    else:
+                        dist = tmp_dist
         else:
             dist = float('inf')
 
