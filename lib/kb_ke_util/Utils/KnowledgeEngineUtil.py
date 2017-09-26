@@ -1286,22 +1286,20 @@ class KnowledgeEngineUtil:
 
         onthology_dist_set = dict()
         for gene_id, pair_go_terms in onthology_set.iteritems():
-            dist = self._calc_weighted_pair_term_dist([pair_go_terms[0], pair_go_terms[1]])
-            onthology_dist_set.update({gene_id: dist})
-            # common_parents = self._find_comone_parent(pair_go_terms)
-            # if common_parents:
-            #     dist = 0
-            #     for common_parent in common_parents:
-            #         start_go_term = pair_go_terms[0]
-            #         end_go_term = pair_go_terms[1]
-            #         start_dist = self._calc_weighted_pair_term_dist([start_go_term, common_parent])
-            #         end_dist = self._calc_weighted_pair_term_dist([end_go_term, common_parent])
-            #         tmp_dist = start_dist + end_dist
-            #         if not dist or (tmp_dist < dist):
-            #             dist = tmp_dist
-            #     onthology_dist_set.update({gene_id: dist})
-            # else:
-            #     onthology_dist_set.update({gene_id: float('inf')})
+            common_parents = self._find_comone_parent(pair_go_terms)
+            if common_parents:
+                dist = 0
+                for common_parent in common_parents:
+                    start_go_term = pair_go_terms[0]
+                    end_go_term = pair_go_terms[1]
+                    start_dist = self._calc_weighted_pair_term_dist([start_go_term, common_parent])
+                    end_dist = self._calc_weighted_pair_term_dist([end_go_term, common_parent])
+                    tmp_dist = start_dist + end_dist
+                    if not dist or (tmp_dist < dist):
+                        dist = tmp_dist
+                onthology_dist_set.update({gene_id: dist})
+            else:
+                onthology_dist_set.update({gene_id: float('inf')})
 
         returnVal = {'onthology_dist_set': onthology_dist_set}
 
