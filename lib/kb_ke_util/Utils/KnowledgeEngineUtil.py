@@ -245,6 +245,8 @@ class KnowledgeEngineUtil:
                     num_value_array.append(float(value))
                 elif isinstance(value, str) and value in empty_string:
                     num_value_array.append(0)
+                elif value is None:
+                    num_value_array.append(0)
                 else:
                     error_msg = 'INVALID data_matrix:\n'
                     error_msg += 'cannot convert all element to number: {}'.format(value_array)
