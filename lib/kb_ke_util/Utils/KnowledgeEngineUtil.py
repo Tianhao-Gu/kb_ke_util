@@ -16,11 +16,12 @@ def log(message, prefix_newline=False):
     time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time()))
     print(('\n' if prefix_newline else '') + time_str + ': ' + message)
 
+
 class KnowledgeEngineUtil:
 
-    METRIC = ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
-              "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
-              "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean", 
+    METRIC = ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine",
+              "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching",
+              "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
               "yule"]
 
     METHOD = ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
@@ -29,7 +30,7 @@ class KnowledgeEngineUtil:
 
     ONTOLOGY_HASH = None
     WEIGHTED_EDGES = None
-    
+
     @classmethod
     def update_ontology_hash(cls, ontology_hash):
         cls.ONTOLOGY_HASH = ontology_hash
@@ -102,7 +103,8 @@ class KnowledgeEngineUtil:
         # check method validation
         method = params.get('method')
         if method and method not in self.METHOD:
-            error_msg = 'INPUT ERROR:\nInput linkage algorithm [{}] is not valid.\n'.format(method)
+            error_msg = 'INPUT ERROR:\nInput linkage algorithm [{}] is not valid.\n'.format(
+                                                                                        method)
             error_msg += 'Available metric: {}'.format(self.METHOD)
             raise ValueError(error_msg)
 
@@ -162,7 +164,8 @@ class KnowledgeEngineUtil:
         # check method validation
         method = params.get('linkage_method')
         if method and method not in self.METHOD:
-            error_msg = 'INPUT ERROR:\nInput linkage algorithm [{}] is not valid.\n'.format(method)
+            error_msg = 'INPUT ERROR:\nInput linkage algorithm [{}] is not valid.\n'.format(
+                                                                                        method)
             error_msg += 'Available metric: {}'.format(self.METHOD)
             raise ValueError(error_msg)
 
@@ -213,7 +216,7 @@ class KnowledgeEngineUtil:
             return True
         except ValueError:
             pass
-     
+
         return False
 
     def _is_number(self, num):
@@ -230,7 +233,7 @@ class KnowledgeEngineUtil:
         _get_data: get data into a 2d array
         """
         values = data_matrix.get('values')
-        empty_string = ['NA', 'NULL', 'null', '']
+        empty_string = ['NA', 'NULL', 'null', '', None, 'None', 'none']
 
         num_values = []
         for value_array in values:
@@ -247,7 +250,7 @@ class KnowledgeEngineUtil:
                     error_msg += 'cannot convert all element to number: {}'.format(value_array)
                     raise ValueError(error_msg)
             num_values.append(num_value_array)
-                    
+
         data = numpy.array(num_values)
 
         return data
@@ -330,11 +333,12 @@ class KnowledgeEngineUtil:
 
         total_values = len(row_ids) * len(col_ids)
         if len(one_d_values) != total_values:
-            raise ValueError('Expecting {} values but getting {}'.format(total_values, 
+            raise ValueError('Expecting {} values but getting {}'.format(total_values,
                                                                          len(one_d_values)))
 
         col_size = len(col_ids)
-        empty_string = [None, '', 'null', 'NA', 'None']
+        empty_string = ['NA', 'NULL', 'null', '', None, 'None', 'none']
+
         for row_count in range(len(row_ids)):
             start_pos = row_count * col_size
             end_pos = (row_count + 1) * col_size
@@ -348,7 +352,7 @@ class KnowledgeEngineUtil:
 
         return data_matrix
 
-    def _build_flat_cluster(self, data_matrix, dist_threshold, 
+    def _build_flat_cluster(self, data_matrix, dist_threshold,
                             dist_metric=None, linkage_method=None, fcluster_criterion=None):
 
         """
@@ -398,7 +402,7 @@ class KnowledgeEngineUtil:
 
         return go_id_gene_ids_list_map
 
-    def _get_immediate_parents(self, ontology_hash, go_id, 
+    def _get_immediate_parents(self, ontology_hash, go_id,
                                is_a_relationship, regulates_relationship, part_of_relationship):
         """
         _get_immediate_parents: get immediate parents go_ids for a given go_id
@@ -430,27 +434,29 @@ class KnowledgeEngineUtil:
 
         return parent_ids
 
-    def _fetch_all_parents_go_ids(self, ontology_hash, go_id, 
-                                  is_a_relationship, regulates_relationship, part_of_relationship):
+    def _fetch_all_parents_go_ids(self, ontology_hash, go_id,
+                                  is_a_relationship, regulates_relationship,
+                                  part_of_relationship):
         """
         _fetch_all_parents_go_ids: recusively fetch all parent go_ids
         """
 
-        parent_ids = self._get_immediate_parents(ontology_hash, go_id, 
-                                                 is_a_relationship, regulates_relationship, 
+        parent_ids = self._get_immediate_parents(ontology_hash, go_id,
+                                                 is_a_relationship, regulates_relationship,
                                                  part_of_relationship)
         if parent_ids:
             grand_parent_ids = parent_ids
             for parent_id in parent_ids:
-                grand_parent_ids += self._fetch_all_parents_go_ids(ontology_hash, parent_id, 
-                                                                   is_a_relationship, 
-                                                                   regulates_relationship, 
+                grand_parent_ids += self._fetch_all_parents_go_ids(ontology_hash,
+                                                                   parent_id,
+                                                                   is_a_relationship,
+                                                                   regulates_relationship,
                                                                    part_of_relationship)[parent_id]
             return {go_id: list(set(grand_parent_ids))}
         else:
             return {go_id: []}
 
-    def _generate_parent_child_map(self, ontology_hash, go_ids, 
+    def _generate_parent_child_map(self, ontology_hash, go_ids,
                                    is_a_relationship=True,
                                    regulates_relationship=False,
                                    part_of_relationship=False):
@@ -462,14 +468,14 @@ class KnowledgeEngineUtil:
         start = time.time()
 
         go_id_parent_ids_map = {}
-        
+
         for go_id in go_ids:
-            fetch_result = self._fetch_all_parents_go_ids(ontology_hash, go_id, 
-                                                          is_a_relationship, 
-                                                          regulates_relationship, 
+            fetch_result = self._fetch_all_parents_go_ids(ontology_hash, go_id,
+                                                          is_a_relationship,
+                                                          regulates_relationship,
                                                           part_of_relationship)
 
-            go_id_parent_ids_map.update(fetch_result) 
+            go_id_parent_ids_map.update(fetch_result)
 
         end = time.time()
         log('used {:.2f} s'.format(end - start))
@@ -500,7 +506,7 @@ class KnowledgeEngineUtil:
 
         go_ids = go_id_gene_ids_list_map.keys()
 
-        go_id_parent_ids_map = self._generate_parent_child_map(ontology_hash, 
+        go_id_parent_ids_map = self._generate_parent_child_map(ontology_hash,
                                                                go_ids,
                                                                regulates_relationship=False)
 
@@ -535,7 +541,7 @@ class KnowledgeEngineUtil:
             else:
                 enrich_info.update({'ontology_type': None})
 
-    def _calculate_go_enrichment(self, go_id_gene_ids_list_map, feature_set_ids, 
+    def _calculate_go_enrichment(self, go_id_gene_ids_list_map, feature_set_ids,
                                  total_feature_ids):
         """
         _calculate_go_enrichment: calcualte go enrichment
@@ -602,12 +608,12 @@ class KnowledgeEngineUtil:
             found_end_root = False
             current_step_start_parent_ids = list()
             for pre_step_start_parent_id in pre_step_start_parent_ids:
-                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                     pre_step_start_parent_id,
                                                                     is_a_relationship=True,
                                                                     regulates_relationship=False,
                                                                     part_of_relationship=False)
-                map(lambda parent_id: start_parents.update({parent_id: step}), 
+                map(lambda parent_id: start_parents.update({parent_id: step}),
                     step_start_parent_ids)
                 current_step_start_parent_ids += step_start_parent_ids
             if current_step_start_parent_ids:
@@ -617,12 +623,12 @@ class KnowledgeEngineUtil:
 
             current_step_end_parent_ids = list()
             for pre_step_end_parent_id in pre_step_end_parent_ids:
-                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                   pre_step_end_parent_id,
                                                                   is_a_relationship=True,
                                                                   regulates_relationship=False,
                                                                   part_of_relationship=False)
-                map(lambda parent_id: end_parents.update({parent_id: step}), 
+                map(lambda parent_id: end_parents.update({parent_id: step}),
                     step_end_parent_ids)
                 current_step_end_parent_ids += step_end_parent_ids
             if current_step_end_parent_ids:
@@ -686,7 +692,7 @@ class KnowledgeEngineUtil:
             current_step_start_parent_ids = list()
             current_start_step_dist = dict()
             for pre_step_start_parent_id in pre_step_start_parent_ids:
-                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                     pre_step_start_parent_id,
                                                                     is_a_relationship=True,
                                                                     regulates_relationship=False,
@@ -698,10 +704,10 @@ class KnowledgeEngineUtil:
                     if step_start_parent_id in current_start_step_dist:
                         current_dist = current_start_step_dist[step_start_parent_id]
                         if current_dist > current_weight + weighted_edge:
-                            current_start_step_dist.update({step_start_parent_id: 
+                            current_start_step_dist.update({step_start_parent_id:
                                                             current_weight + weighted_edge})
                     else:
-                        current_start_step_dist.update({step_start_parent_id: 
+                        current_start_step_dist.update({step_start_parent_id:
                                                         current_weight + weighted_edge})
                 current_step_start_parent_ids += step_start_parent_ids
 
@@ -719,7 +725,7 @@ class KnowledgeEngineUtil:
             current_step_end_parent_ids = list()
             current_end_step_dist = dict()
             for pre_step_end_parent_id in pre_step_end_parent_ids:
-                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                   pre_step_end_parent_id,
                                                                   is_a_relationship=True,
                                                                   regulates_relationship=False,
@@ -731,10 +737,10 @@ class KnowledgeEngineUtil:
                     if step_end_parent_id in current_end_step_dist:
                         current_dist = current_end_step_dist[step_end_parent_id]
                         if current_dist > current_weight + weighted_edge:
-                            current_end_step_dist.update({step_end_parent_id: 
+                            current_end_step_dist.update({step_end_parent_id:
                                                           current_weight + weighted_edge})
                     else:
-                        current_end_step_dist.update({step_end_parent_id: 
+                        current_end_step_dist.update({step_end_parent_id:
                                                       current_weight + weighted_edge})
                 current_step_end_parent_ids += step_end_parent_ids
 
@@ -807,12 +813,12 @@ class KnowledgeEngineUtil:
             found_end_root = False
             current_step_start_parent_ids = list()
             for pre_step_start_parent_id in pre_step_start_parent_ids:
-                step_start_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_start_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                     pre_step_start_parent_id,
                                                                     is_a_relationship=True,
                                                                     regulates_relationship=False,
                                                                     part_of_relationship=False)
-                map(lambda parent_id: start_parents.update({parent_id: step}), 
+                map(lambda parent_id: start_parents.update({parent_id: step}),
                     step_start_parent_ids)
                 current_step_start_parent_ids += step_start_parent_ids
             if current_step_start_parent_ids:
@@ -822,12 +828,12 @@ class KnowledgeEngineUtil:
 
             current_step_end_parent_ids = list()
             for pre_step_end_parent_id in pre_step_end_parent_ids:
-                step_end_parent_ids = self._get_immediate_parents(ontology_hash, 
+                step_end_parent_ids = self._get_immediate_parents(ontology_hash,
                                                                   pre_step_end_parent_id,
                                                                   is_a_relationship=True,
                                                                   regulates_relationship=False,
                                                                   part_of_relationship=False)
-                map(lambda parent_id: end_parents.update({parent_id: step}), 
+                map(lambda parent_id: end_parents.update({parent_id: step}),
                     step_end_parent_ids)
                 current_step_end_parent_ids += step_end_parent_ids
             if current_step_end_parent_ids:
@@ -851,7 +857,8 @@ class KnowledgeEngineUtil:
 
     def _compute_weighted_edges(self):
         """
-        _compute_top_down_tree: given nodes only knows immediate parents, computes top to down tree
+        _compute_top_down_tree: given nodes only knows immediate parents, computes top to down
+                                tree
         """
 
         log('generating weighted edges')
@@ -868,9 +875,9 @@ class KnowledgeEngineUtil:
         weighted_edges = dict()
 
         for ontology_term in ontology_hash.keys():
-            parent_terms = self._get_immediate_parents(ontology_hash, ontology_term, 
-                                                       is_a_relationship=True, 
-                                                       regulates_relationship=False, 
+            parent_terms = self._get_immediate_parents(ontology_hash, ontology_term,
+                                                       is_a_relationship=True,
+                                                       regulates_relationship=False,
                                                        part_of_relationship=False)
             if parent_terms:
                 for parent_term in parent_terms:
@@ -922,23 +929,23 @@ class KnowledgeEngineUtil:
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
 
         data_matrix - raw data matrix with row_ids, col_ids and values
-                      e.g.{'row_ids': ['gene_1', 'gene_2'], 
+                      e.g.{'row_ids': ['gene_1', 'gene_2'],
                            'col_ids': ['condition_1', 'condition_2'],
                            'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
 
         Optional arguments:
         metric - The distance metric to use. Default set to 'euclidean'.
-                 The distance function can be 
-                 ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
-                  "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
-                  "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean", 
+                 The distance function can be
+                 ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine",
+                  "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching",
+                  "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", "sqeuclidean",
                   "yule"]
 
-        Note: Advanced metric functions 'minkowski', 'seuclidean' and 'mahalanobis' included in 
+        Note: Advanced metric functions 'minkowski', 'seuclidean' and 'mahalanobis' included in
               scipy.spatial.distance.pdist library are not implemented
 
         return:
-        dist_matrix - 1D distance matrix 
+        dist_matrix - 1D distance matrix
         labels - item name corresponding to each dist_matrix element
         """
 
@@ -973,9 +980,9 @@ class KnowledgeEngineUtil:
 
         Optional arguments:
         method - The linkage algorithm to use. Default set to 'ward'.
-                 The method can be 
+                 The method can be
                  ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
-                 Details refer to: 
+                 Details refer to:
                  https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
 
         return:
@@ -1002,26 +1009,26 @@ class KnowledgeEngineUtil:
     def run_fcluster(self, params):
         """
         run_fcluster: a wrapper method for scipy.cluster.hierarchy.fcluster
-        reference: 
+        reference:
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
 
         linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
         dist_threshold - the threshold to apply when forming flat clusters
 
         Optional arguments:
-        labels - items corresponding to each linkage_matrix element 
+        labels - items corresponding to each linkage_matrix element
                  (If labels are given, result flat_cluster will be mapped to element in labels.)
         criterion - The criterion to use in forming flat clusters. Default set to 'distance'.
-                    The criterion can be 
+                    The criterion can be
                     ["inconsistent", "distance", "maxclust"]
-                    Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in 
+                    Note: Advanced criterion 'monocrit', 'maxclust_monocrit' in
                     scipy.cluster.hierarchy.fcluster library are not implemented
-                    Details refer to: 
+                    Details refer to:
                     https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html
 
         return:
         flat_cluster - A dictionary of flat clusters.
-                       Each element of flat_cluster representing a cluster contains a label array. 
+                       Each element of flat_cluster representing a cluster contains a label array.
                       (If labels is none, element position array is returned to each cluster group)
         """
 
@@ -1053,15 +1060,15 @@ class KnowledgeEngineUtil:
     def run_dendrogram(self, params):
         """
         run_dendrogram: a wrapper method for scipy.cluster.hierarchy.dendrogram
-        reference: 
+        reference:
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
 
         linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
 
         Optional arguments:
-        dist_threshold - the threshold to apply when forming flat clusters 
+        dist_threshold - the threshold to apply when forming flat clusters
                          (draw a horizontal line to dendrogram)
-        labels - items corresponding to each linkage_matrix element 
+        labels - items corresponding to each linkage_matrix element
                 (If labels are given, result dendrogram x-axis will be mapped to element in labels)
         last_merges - show only last given value merged clusters
 
@@ -1133,9 +1140,9 @@ class KnowledgeEngineUtil:
         Optional arguments:
         dist_metric: The distance metric to use. Default set to 'euclidean'.
                      The distance function can be
-                     ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", 
-                      "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching", 
-                      "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath", 
+                     ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine",
+                      "dice", "euclidean", "hamming", "jaccard", "kulsinski", "matching",
+                      "rogerstanimoto", "russellrao", "sokalmichener", "sokalsneath",
                       "sqeuclidean", "yule"]
                      Details refer to:
                      https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
@@ -1146,7 +1153,7 @@ class KnowledgeEngineUtil:
                         Details refer to:
                         https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
 
-        fcluster_criterion: The criterion to use in forming flat clusters. 
+        fcluster_criterion: The criterion to use in forming flat clusters.
                             Default set to 'inconsistent'.
                             The criterion can be
                             ["inconsistent", "distance", "maxclust"]
@@ -1222,8 +1229,8 @@ class KnowledgeEngineUtil:
         if propagation:
             self._process_parent_go_terms(go_id_gene_ids_list_map, ontology_hash)
 
-        enrichment_profile = self._calculate_go_enrichment(go_id_gene_ids_list_map, 
-                                                           sample_set, 
+        enrichment_profile = self._calculate_go_enrichment(go_id_gene_ids_list_map,
+                                                           sample_set,
                                                            entity_term_set.keys())
 
         self._append_ontology_type(enrichment_profile, ontology_hash)
@@ -1235,7 +1242,7 @@ class KnowledgeEngineUtil:
     def calc_onthology_dist(self, params):
         """
         enrich_onthology: calculate onthology distance
-                          (sum of steps for each node in onthology_pair travels to 
+                          (sum of steps for each node in onthology_pair travels to
                            the nearest common ancestor node)
                           NOTE: return inf if no common ancestor node found
 
@@ -1292,7 +1299,8 @@ class KnowledgeEngineUtil:
                 for common_parent in common_parents:
                     start_go_term = pair_go_terms[0]
                     end_go_term = pair_go_terms[1]
-                    start_dist = self._calc_weighted_pair_term_dist([start_go_term, common_parent])
+                    start_dist = self._calc_weighted_pair_term_dist([start_go_term,
+                                                                     common_parent])
                     end_dist = self._calc_weighted_pair_term_dist([end_go_term, common_parent])
                     tmp_dist = start_dist + end_dist
                     if not dist or (tmp_dist < dist):
