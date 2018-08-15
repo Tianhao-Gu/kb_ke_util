@@ -90,16 +90,16 @@ class kb_ke_utilTest(unittest.TestCase):
         object_type = 'KBaseGenerics.NDArray'
         ndarray_object_name = 'test_ndarray'
         ndarray_data = {'dim_context': [{'typed_values': [{'values': {'scalar_type': 'string',
-                                                                      'string_values': ['gene_id_1', 
-                                                                                        'gene_id_2', 
+                                                                      'string_values': ['gene_id_1',
+                                                                                        'gene_id_2',
                                                                                         'gene_id_3']},
                                                            'value_type': {'term_name': 'gene ids'}}],
                                          'size': 3,
                                          'data_type': {'term_name': 'gene ids'}},
                                         {'typed_values': [{'values': {'scalar_type': 'string',
-                                                                      'string_values': ['condition_1', 
-                                                                                        'condition_2', 
-                                                                                        'condition_3', 
+                                                                      'string_values': ['condition_1',
+                                                                                        'condition_2',
+                                                                                        'condition_3',
                                                                                         'condition_4']},
                                                            'value_type': {'term_name': 'conditions'}}],
                                          'size': 4,
@@ -240,15 +240,6 @@ class kb_ke_utilTest(unittest.TestCase):
         error_msg = '"data_matrix" parameter is required, but missing'
         self.fail_run_pdist(invalidate_params, error_msg)
 
-        invalidate_params = {'data_matrix': 'not_dict'}
-        error_msg = "INPUT ERROR:\nRequiring dictionary data_matrix.\nGot: <type 'str'>"
-        self.fail_run_pdist(invalidate_params, error_msg)
-
-        invalidate_params = {'data_matrix': {'missing_keys': 'missing_keys'}}
-        error_msg = 'INPUT ERROR:\nRequiring ["row_ids", "col_ids", "values"] keys.\n'
-        error_msg += 'Got: [\'missing_keys\']'
-        self.fail_run_pdist(invalidate_params, error_msg)
-
         invalidate_params = {'data_matrix': {'row_ids': 'row_ids',
                                              'col_ids': 'col_ids',
                                              'values': 'values'},
@@ -257,17 +248,29 @@ class kb_ke_utilTest(unittest.TestCase):
         self.fail_run_pdist(invalidate_params, error_msg, contains=True)
 
     def test_bad_data_matrix(self):
-        params = {'data_matrix': {'row_ids': ['gene_1', 'gene_2', 'gene_3'],
-                                  'col_ids': ['condition_1', 'condition_2', 'condition_3'],
-                                  'values': [['a', 0.2, 0.3], [0.3, 0.4, 0.5], [0.5, 0.6, 0.7]]}}
-        error_msg = "INVALID data_matrix:\ncannot convert all element to number: ['a', 0.2, 0.3]"
-        self.fail_run_pdist(params, error_msg)
+
+        data_matrix = """
+            {"condition_1":{"gene_1":"a","gene_2":0.3,"gene_3":null},
+             "condition_2":{"gene_1":0.2,"gene_2":0.4,"gene_3":null},
+             "condition_3":{"gene_1":0.3,"gene_2":0.5,"gene_3":null},
+             "condition_4":{"gene_1":0.4,"gene_2":0.6,"gene_3":null}}
+        """
+
+        params = {'data_matrix': data_matrix}
+        error_msg = "INVALID data_matrix:\ncannot convert all element to number:"
+        self.fail_run_pdist(params, error_msg, contains=True)
 
     def test_run_pdist(self):
         self.start_test()
-        params = {'data_matrix': {'row_ids': ['gene_1', 'gene_2', 'gene_3'],
-                                  'col_ids': ['condition_1', 'condition_2', 'condition_3'],
-                                  'values': [[0.1, 0.2, 0.3], [0.3, 0.4, 0.5], [0.5, 0.6, 0.7]]}}
+
+        data_matrix = """
+            {"condition_1":{"gene_1":0.1,"gene_2":0.3,"gene_3":null},
+             "condition_2":{"gene_1":0.2,"gene_2":0.4,"gene_3":null},
+             "condition_3":{"gene_1":0.3,"gene_2":0.5,"gene_3":null},
+             "condition_4":{"gene_1":0.4,"gene_2":0.6,"gene_3":null}}
+        """
+        # data_matrix = json.loads(json_str)
+        params = {'data_matrix': data_matrix}
         ret = self.getImpl().run_pdist(self.ctx, params)[0]
         self.check_run_pdist_output(ret)
 
@@ -365,6 +368,7 @@ class kb_ke_utilTest(unittest.TestCase):
         error_msg = "INPUT ERROR:\nInput criterion [invalidate_criterion] is not valid.\n"
         self.fail_build_biclusters(invalidate_params, error_msg, contains=True)
 
+    @unittest.skip("build_biclusters skipping")
     def test_build_biclusters(self):
         self.start_test()
         params = {'ndarray_ref': self.ndarray_ref,
@@ -419,7 +423,7 @@ class kb_ke_utilTest(unittest.TestCase):
         error_msg = '"onthology_set" parameter is required, but missing'
         self.fail_calc_onthology_dist(invalidate_params, error_msg)
 
-        invalidate_params = {'onthology_set': {'gene_id_1': 
+        invalidate_params = {'onthology_set': {'gene_id_1':
                                                ['go_term_1', 'go_term_2', 'go_term_3']}}
         error_msg = 'Input Error: one or more gene is associated with more than 2 GO terms'
         self.fail_calc_onthology_dist(invalidate_params, error_msg)
