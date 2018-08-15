@@ -1,5 +1,5 @@
 import time
-import numpy
+import numpy as np
 import os
 import errno
 import uuid
@@ -8,6 +8,7 @@ import fisher
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
 from matplotlib import pyplot as plt
+import pandas as pd
 
 from Workspace.WorkspaceClient import Workspace as Workspace
 
@@ -65,20 +66,6 @@ class KnowledgeEngineUtil:
         for p in ['data_matrix']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
-
-        # check data_matrix validation
-        data_matrix = params['data_matrix']
-        if not isinstance(data_matrix, dict):
-            error_msg = 'INPUT ERROR:\nRequiring dictionary data_matrix.\n'
-            error_msg += 'Got: {}'.format(type(data_matrix))
-            raise ValueError(error_msg)
-
-        required_keys = ['row_ids', 'col_ids', 'values']
-        keys = data_matrix.keys()
-        if not all(i in keys for i in required_keys):
-            error_msg = 'INPUT ERROR:\nRequiring ["row_ids", "col_ids", "values"] keys.\n'
-            error_msg += 'Got: {}'.format(keys)
-            raise ValueError(error_msg)
 
         # check metric validation
         metric = params.get('metric')
@@ -228,32 +215,19 @@ class KnowledgeEngineUtil:
         except:
             return False
 
-    def _get_data(self, data_matrix):
+    def _get_data(self, values):
         """
         _get_data: get data into a 2d array
         """
-        values = data_matrix.get('values')
-        empty_string = ['NA', 'NULL', 'null', '', None, 'None', 'none']
 
-        num_values = []
-        for value_array in values:
-            num_value_array = []
-            for value in value_array:
-                if self._is_number(value):
-                    num_value_array.append(value)
-                elif isinstance(value, str) and self._is_number_string(value):
-                    num_value_array.append(float(value))
-                elif isinstance(value, str) and value in empty_string:
-                    num_value_array.append(0)
-                elif value is None:
-                    num_value_array.append(0)
-                else:
-                    error_msg = 'INVALID data_matrix:\n'
-                    error_msg += 'cannot convert all element to number: {}'.format(value_array)
-                    raise ValueError(error_msg)
-            num_values.append(num_value_array)
+        data = np.nan_to_num(np.array(values))
 
-        data = numpy.array(num_values)
+        try:
+            data = data.astype(float)
+        except:
+            error_msg = 'INVALID data_matrix:\n'
+            error_msg += 'cannot convert all element to number:\n{}\n'.format(data)
+            raise ValueError(error_msg)
 
         return data
 
@@ -930,10 +904,11 @@ class KnowledgeEngineUtil:
         reference:
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
 
-        data_matrix - raw data matrix with row_ids, col_ids and values
-                      e.g.{'row_ids': ['gene_1', 'gene_2'],
-                           'col_ids': ['condition_1', 'condition_2'],
-                           'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
+        data_matrix - raw data matrix in json format
+                      e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+                           u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+                           u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+                           u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
 
         Optional arguments:
         metric - The distance metric to use. Default set to 'euclidean'.
@@ -960,9 +935,15 @@ class KnowledgeEngineUtil:
         if not metric:
             metric = 'euclidean'
 
-        labels = data_matrix.get('row_ids')
+        df = pd.read_json(data_matrix)
 
-        data = self._get_data(data_matrix)
+        print df
+
+        # labels = data_matrix.get('row_ids')
+        labels = df.index.tolist()
+        values = df.values.tolist()
+
+        data = self._get_data(values)
         log('start computing distance matrix')
         dist_matrix = dist.pdist(data, metric=metric).tolist()
         log('finished computing distance matrix')
