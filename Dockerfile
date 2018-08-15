@@ -21,13 +21,17 @@ RUN pip install cffi --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
 
-RUN pip install pandas \
-    && pip install xlrd 
-# -----------------------------------------
-
 RUN pip install --upgrade scipy
 RUN pip install fisher
 
+RUN pip uninstall numpy -y \
+    && pip install numpy==1.14.5
+
+RUN pip install pandas \
+    && pip install xlrd 
+
+
+# -----------------------------------------
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module
