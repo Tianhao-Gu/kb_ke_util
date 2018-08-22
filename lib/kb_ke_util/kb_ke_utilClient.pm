@@ -108,6 +108,102 @@ sub new
 
 
 
+=head2 run_kmeans2
+
+  $returnVal = $obj->run_kmeans2($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.KmeansParams
+$returnVal is a kb_ke_util.KmeansOutput
+KmeansParams is a reference to a hash where the following keys are defined:
+	dist_matrix has a value which is a reference to a list where each element is a float
+	k_num has a value which is an int
+KmeansOutput is a reference to a hash where the following keys are defined:
+	centroid has a value which is a reference to a list where each element is a float
+	idx has a value which is a reference to a list where each element is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.KmeansParams
+$returnVal is a kb_ke_util.KmeansOutput
+KmeansParams is a reference to a hash where the following keys are defined:
+	dist_matrix has a value which is a reference to a list where each element is a float
+	k_num has a value which is an int
+KmeansOutput is a reference to a hash where the following keys are defined:
+	centroid has a value which is a reference to a list where each element is a float
+	idx has a value which is a reference to a list where each element is an int
+
+
+=end text
+
+=item Description
+
+run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2
+reference:
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html#scipy.cluster.vq.kmeans2
+
+=back
+
+=cut
+
+ sub run_kmeans2
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_kmeans2 (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_kmeans2:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_kmeans2');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_kmeans2",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_kmeans2',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_kmeans2",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_kmeans2',
+				       );
+    }
+}
+ 
+
+
 =head2 run_pdist
 
   $returnVal = $obj->run_pdist($params)
@@ -1044,6 +1140,84 @@ a string
 =begin text
 
 a string
+
+=end text
+
+=back
+
+
+
+=head2 KmeansParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_kmeans2 function
+dist_matrix - a condensed distance matrix (refer to run_pdist return)
+k_num: number of clusters to form
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+dist_matrix has a value which is a reference to a list where each element is a float
+k_num has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+dist_matrix has a value which is a reference to a list where each element is a float
+k_num has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 KmeansOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_kmeans2 function
+centroid - centroids found at the last iteration of k-means
+idx - index of the centroid
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+centroid has a value which is a reference to a list where each element is a float
+idx has a value which is a reference to a list where each element is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+centroid has a value which is a reference to a list where each element is a float
+idx has a value which is a reference to a list where each element is an int
+
 
 =end text
 

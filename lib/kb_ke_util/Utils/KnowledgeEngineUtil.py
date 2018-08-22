@@ -7,6 +7,7 @@ import json
 import fisher
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
+import scipy.cluster.vq as vq
 from matplotlib import pyplot as plt
 import pandas as pd
 
@@ -53,6 +54,19 @@ class KnowledgeEngineUtil:
                 pass
             else:
                 raise
+
+    def _validate_run_kmeans2_params(self, params):
+        """
+        _validate_run_kmeans2_params:
+                validates params passed to run_kmeans2 method
+        """
+
+        log('start validating run_kmeans2 params')
+
+        # check for required parameters
+        for p in ['dist_matrix', 'k_num']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
 
     def _validate_run_pdist_params(self, params):
         """
@@ -898,6 +912,39 @@ class KnowledgeEngineUtil:
 
         self.ws = Workspace(self.ws_url, token=self.token)
 
+    def run_kmeans2(self, params):
+        """
+        run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2
+        reference:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html#scipy.cluster.vq.kmeans2
+
+        dist_matrix: a condensed distance matrix
+        k_num: number of clusters to form
+
+        return:
+        centroid: centroids found at the last iteration of k-means
+        idx - index of the centroid
+        """
+
+        log('--->\nrunning run_kmeans2\n')
+
+        self._validate_run_kmeans2_params(params)
+
+        dist_matrix = params.get('dist_matrix')
+        k_num = params.get('k_num')
+
+        try:
+            k_num = int(k_num)
+        except:
+            raise ValueError('[k_num] must be a integer or integer string')
+
+        centroid, idx = vq.kmeans2(dist_matrix, k_num)
+
+        returnVal = {'centroid': centroid.tolist(),
+                     'idx': idx.tolist()}
+
+        return returnVal
+
     def run_pdist(self, params):
         """
         run_pdist: a wrapper method for scipy.spatial.distance.pdist
@@ -922,7 +969,7 @@ class KnowledgeEngineUtil:
               scipy.spatial.distance.pdist library are not implemented
 
         return:
-        dist_matrix - 1D distance matrix
+        dist_matrix - a condensed distance matrix
         labels - item name corresponding to each dist_matrix element
         """
 
@@ -936,10 +983,6 @@ class KnowledgeEngineUtil:
             metric = 'euclidean'
 
         df = pd.read_json(data_matrix)
-
-        print df
-
-        # labels = data_matrix.get('row_ids')
         labels = df.index.tolist()
         values = df.values.tolist()
 
