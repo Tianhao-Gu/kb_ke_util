@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.3"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "da2d555e8f095e33fbb98ab43925a5adf1e3dd6d"
+    GIT_COMMIT_HASH = "09aebab2cc011ccffdae70a0bc0e3f76dcd1cacb"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -37,6 +37,41 @@ class kb_ke_util:
         #END_CONSTRUCTOR
         pass
 
+
+    def run_kmeans2(self, ctx, params):
+        """
+        run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2
+        reference:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html#scipy.cluster.vq.kmeans2
+        :param params: instance of type "KmeansParams" (Input of the
+           run_kmeans2 function dist_matrix - a condensed distance matrix
+           (refer to run_pdist return) k_num: number of clusters to form) ->
+           structure: parameter "dist_matrix" of list of Double, parameter
+           "k_num" of Long
+        :returns: instance of type "KmeansOutput" (Ouput of the run_kmeans2
+           function centroid - centroids found at the last iteration of
+           k-means idx - index of the centroid) -> structure: parameter
+           "centroid" of list of Double, parameter "idx" of list of Long
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_kmeans2
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_kmeans2(params)
+        #END run_kmeans2
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_kmeans2 return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
 
     def run_pdist(self, ctx, params):
         """

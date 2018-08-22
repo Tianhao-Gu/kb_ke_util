@@ -143,6 +143,14 @@ class kb_ke_utilTest(unittest.TestCase):
         testname = inspect.stack()[1][3]
         print('\n*** starting test: ' + testname + ' **')
 
+    def fail_run_kmeans2(self, params, error, exception=ValueError, contains=False):
+        with self.assertRaises(exception) as context:
+            self.getImpl().run_kmeans2(self.ctx, params)
+        if contains:
+            self.assertIn(error, str(context.exception.message))
+        else:
+            self.assertEqual(error, str(context.exception.message))
+
     def fail_run_pdist(self, params, error, exception=ValueError, contains=False):
         with self.assertRaises(exception) as context:
             self.getImpl().run_pdist(self.ctx, params)
@@ -203,6 +211,10 @@ class kb_ke_utilTest(unittest.TestCase):
         self.assertTrue('dist_matrix' in ret)
         self.assertTrue('labels' in ret)
 
+    def check_run_kmeans2_output(self, ret):
+        self.assertTrue('centroid' in ret)
+        self.assertTrue('idx' in ret)
+
     def check_run_linkage_output(self, ret):
         self.assertTrue('linkage_matrix' in ret)
 
@@ -233,6 +245,32 @@ class kb_ke_utilTest(unittest.TestCase):
 
         onthology_dist_set = ret['onthology_dist_set']
         self.assertItemsEqual(onthology_dist_set, expect_steps)
+
+    def test_bad_run_kmeans2_params(self):
+        self.start_test()
+        invalidate_params = {'missing_dist_matrix': 'dist_matrix',
+                             'k_num': 'k_num'}
+        error_msg = '"dist_matrix" parameter is required, but missing'
+        self.fail_run_kmeans2(invalidate_params, error_msg)
+
+        invalidate_params = {'dist_matrix': 'dist_matrix',
+                             'missing_k_num': 'k_num'}
+        error_msg = '"k_num" parameter is required, but missing'
+        self.fail_run_kmeans2(invalidate_params, error_msg)
+
+    def test_run_kmeans2(self):
+        self.start_test()
+
+        dist_matrix = [10.0, 1.0, 1.0, 1.0]
+        k_num = 2
+
+        params = {'dist_matrix': dist_matrix,
+                  'k_num': k_num}
+        ret = self.getImpl().run_kmeans2(self.ctx, params)[0]
+        self.check_run_kmeans2_output(ret)
+        idx = ret.get('idx')
+        self.assertIn(idx.count(0), [1, 3, 4])
+        self.assertIn(idx.count(1), [1, 3, 0])
 
     def test_bad_run_pdist_params(self):
         self.start_test()

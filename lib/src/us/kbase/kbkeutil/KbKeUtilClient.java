@@ -163,6 +163,26 @@ public class KbKeUtilClient {
     }
 
     /**
+     * <p>Original spec-file function name: run_kmeans2</p>
+     * <pre>
+     * run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2
+     * reference:
+     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html#scipy.cluster.vq.kmeans2
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.KmeansParams KmeansParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.KmeansOutput KmeansOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public KmeansOutput runKmeans2(KmeansParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<KmeansOutput>> retType = new TypeReference<List<KmeansOutput>>() {};
+        List<KmeansOutput> res = caller.jsonrpcCall("kb_ke_util.run_kmeans2", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: run_pdist</p>
      * <pre>
      * run_pdist: a wrapper method for scipy.spatial.distance.pdist

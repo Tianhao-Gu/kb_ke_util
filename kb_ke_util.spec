@@ -16,6 +16,30 @@ module kb_ke_util {
   math layer
   ***************/
 
+
+  /* Input of the run_kmeans2 function
+    dist_matrix - a condensed distance matrix (refer to run_pdist return)
+    k_num: number of clusters to form
+  */
+  typedef structure {
+    list<float> dist_matrix;
+    int k_num;
+  } KmeansParams;
+
+  /* Ouput of the run_kmeans2 function
+    centroid - centroids found at the last iteration of k-means
+    idx - index of the centroid
+  */
+  typedef structure {
+    list<float> centroid;
+    list<int> idx;
+  } KmeansOutput;
+
+  /* run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2
+        reference:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html#scipy.cluster.vq.kmeans2*/
+  funcdef run_kmeans2(KmeansParams params) returns(KmeansOutput returnVal) authentication required;
+
   /* Input of the run_pdist function
     data_matrix - raw data matrix with row_ids, col_ids and values
                   e.g.{'row_ids': ['gene_1', 'gene_2'], 
