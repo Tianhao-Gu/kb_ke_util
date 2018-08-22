@@ -261,7 +261,7 @@ class kb_ke_utilTest(unittest.TestCase):
     def test_run_kmeans2(self):
         self.start_test()
 
-        dist_matrix = [9.0, 1.0, 1.0, 1.0]
+        dist_matrix = [10.0, 1.0, 1.0, 1.0]
         k_num = 2
 
         params = {'dist_matrix': dist_matrix,
@@ -269,8 +269,8 @@ class kb_ke_utilTest(unittest.TestCase):
         ret = self.getImpl().run_kmeans2(self.ctx, params)[0]
         self.check_run_kmeans2_output(ret)
         idx = ret.get('idx')
-        self.assertIn(idx.count(0), [1, 3])
-        self.assertIn(idx.count(1), [1, 3])
+        self.assertIn(idx.count(0), [1, 3, 4])
+        self.assertIn(idx.count(1), [1, 3, 0])
 
     def test_bad_run_pdist_params(self):
         self.start_test()
