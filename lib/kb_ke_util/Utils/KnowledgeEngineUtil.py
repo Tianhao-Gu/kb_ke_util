@@ -940,7 +940,7 @@ class KnowledgeEngineUtil:
 
         dist_squareform = dist.squareform(dist_matrix)
 
-        centroid, idx = vq.kmeans2(dist_squareform, k_num)
+        centroid, idx = vq.kmeans2(dist_squareform, k_num, minit='points')
 
         returnVal = {'centroid': centroid.tolist(),
                      'idx': idx.tolist()}
