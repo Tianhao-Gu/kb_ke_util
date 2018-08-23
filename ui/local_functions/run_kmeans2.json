@@ -1,0 +1,16 @@
+{
+    "name" : "Run Kmeans",
+    "short_description" : "a wrapper method for  scipy.cluster.vq.kmeans2.",
+    "long_description" : "a wrapper method for  scipy.cluster.vq.kmeans2.",
+    "tags" : {
+        "categories" : ["KnowledgeEngine"],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": []
+        }
+    }
+}
