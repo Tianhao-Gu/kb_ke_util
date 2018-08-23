@@ -938,7 +938,9 @@ class KnowledgeEngineUtil:
         except:
             raise ValueError('[k_num] must be a integer or integer string')
 
-        centroid, idx = vq.kmeans2(dist_matrix, k_num)
+        dist_squareform = dist.squareform(dist_matrix)
+
+        centroid, idx = vq.kmeans2(dist_squareform, k_num)
 
         returnVal = {'centroid': centroid.tolist(),
                      'idx': idx.tolist()}
