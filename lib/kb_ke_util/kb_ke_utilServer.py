@@ -333,6 +333,10 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
+        self.rpc_service.add(impl_kb_ke_util.run_PCA,
+                             name='kb_ke_util.run_PCA',
+                             types=[dict])
+        self.method_authentication['kb_ke_util.run_PCA'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_ke_util.run_kmeans2,
                              name='kb_ke_util.run_kmeans2',
                              types=[dict])

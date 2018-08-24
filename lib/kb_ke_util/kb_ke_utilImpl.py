@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.3"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "7b52e8302c521057a9a56dc0933f688f4d3fdd89"
+    GIT_COMMIT_HASH = "717f125e069ed3e837aa493b9f2e79e3140c1755"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -37,6 +37,40 @@ class kb_ke_util:
         #END_CONSTRUCTOR
         pass
 
+
+    def run_PCA(self, ctx, params):
+        """
+        run_PCA: perform PCA on a n-dimensional matrix
+        :param params: instance of type "PCAParams" (Input of the run_PCA
+           function data_matrix - raw data matrix in json format
+           e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3':
+           None}, u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3':
+           None}, u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3':
+           None}, u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3':
+           None}}) -> structure: parameter "data_matrix" of String
+        :returns: instance of type "PCAOutput" (Ouput of the run_PCA function
+           PCA_matrix - PCA matrix in json format) -> structure: parameter
+           "PCA_matrix" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN run_PCA
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.run_PCA(params)
+        #END run_PCA
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method run_PCA return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
 
     def run_kmeans2(self, ctx, params):
         """
@@ -79,11 +113,13 @@ class kb_ke_util:
         reference: 
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
         :param params: instance of type "PdistParams" (Input of the run_pdist
-           function data_matrix - raw data matrix with row_ids, col_ids and
-           values e.g.{'row_ids': ['gene_1', 'gene_2'], 'col_ids':
-           ['condition_1', 'condition_2'], 'values': [[0.1, 0.2], [0.3, 0.4],
-           [0.5, 0.6]]} Optional arguments: metric - The distance metric to
-           use. Default set to 'euclidean'. The distance function can be
+           function data_matrix - raw data matrix in json format
+           e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3':
+           None}, u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3':
+           None}, u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3':
+           None}, u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3':
+           None}} Optional arguments: metric - The distance metric to use.
+           Default set to 'euclidean'. The distance function can be
            ["braycurtis", "canberra", "chebyshev", "cityblock",
            "correlation", "cosine", "dice", "euclidean", "hamming",
            "jaccard", "kulsinski", "matching", "rogerstanimoto",
@@ -93,8 +129,8 @@ class kb_ke_util:
            distance.pdist.html Note: Advanced metric functions 'minkowski',
            'seuclidean' and 'mahalanobis' included in
            scipy.spatial.distance.pdist library are not implemented) ->
-           structure: parameter "data_matrix" of mapping from String to list
-           of String, parameter "metric" of String
+           structure: parameter "data_matrix" of String, parameter "metric"
+           of String
         :returns: instance of type "PdistOutput" (Ouput of the run_pdist
            function dist_matrix - 1D distance matrix labels - item name
            corresponding to each dist_matrix element) -> structure: parameter
