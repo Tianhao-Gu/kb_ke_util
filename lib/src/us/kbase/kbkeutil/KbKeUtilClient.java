@@ -163,6 +163,24 @@ public class KbKeUtilClient {
     }
 
     /**
+     * <p>Original spec-file function name: run_PCA</p>
+     * <pre>
+     * run_PCA: perform PCA on a n-dimensional matrix
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.PCAParams PCAParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.PCAOutput PCAOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PCAOutput runPCA(PCAParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PCAOutput>> retType = new TypeReference<List<PCAOutput>>() {};
+        List<PCAOutput> res = caller.jsonrpcCall("kb_ke_util.run_PCA", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: run_kmeans2</p>
      * <pre>
      * run_kmeans2: a wrapper method for  scipy.cluster.vq.kmeans2

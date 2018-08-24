@@ -2,7 +2,6 @@
 package us.kbase.kbkeutil;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,10 +15,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: PdistParams</p>
  * <pre>
  * Input of the run_pdist function
- * data_matrix - raw data matrix with row_ids, col_ids and values
- *               e.g.{'row_ids': ['gene_1', 'gene_2'], 
- *                    'col_ids': ['condition_1', 'condition_2'],
- *                    'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
+ * data_matrix - raw data matrix in json format
+ *                   e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+ *                        u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+ *                        u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+ *                        u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
  * Optional arguments:
  * metric - The distance metric to use. Default set to 'euclidean'.
  *          The distance function can be 
@@ -43,53 +43,53 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class PdistParams {
 
     @JsonProperty("data_matrix")
-    private Map<String, List<String>> dataMatrix;
+    private String dataMatrix;
     @JsonProperty("metric")
-    private java.lang.String metric;
-    private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
+    private String metric;
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("data_matrix")
-    public Map<String, List<String>> getDataMatrix() {
+    public String getDataMatrix() {
         return dataMatrix;
     }
 
     @JsonProperty("data_matrix")
-    public void setDataMatrix(Map<String, List<String>> dataMatrix) {
+    public void setDataMatrix(String dataMatrix) {
         this.dataMatrix = dataMatrix;
     }
 
-    public PdistParams withDataMatrix(Map<String, List<String>> dataMatrix) {
+    public PdistParams withDataMatrix(String dataMatrix) {
         this.dataMatrix = dataMatrix;
         return this;
     }
 
     @JsonProperty("metric")
-    public java.lang.String getMetric() {
+    public String getMetric() {
         return metric;
     }
 
     @JsonProperty("metric")
-    public void setMetric(java.lang.String metric) {
+    public void setMetric(String metric) {
         this.metric = metric;
     }
 
-    public PdistParams withMetric(java.lang.String metric) {
+    public PdistParams withMetric(String metric) {
         this.metric = metric;
         return this;
     }
 
     @JsonAnyGetter
-    public Map<java.lang.String, Object> getAdditionalProperties() {
+    public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
     @JsonAnySetter
-    public void setAdditionalProperties(java.lang.String name, Object value) {
+    public void setAdditionalProperties(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
 
     @Override
-    public java.lang.String toString() {
+    public String toString() {
         return ((((((("PdistParams"+" [dataMatrix=")+ dataMatrix)+", metric=")+ metric)+", additionalProperties=")+ additionalProperties)+"]");
     }
 

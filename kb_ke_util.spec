@@ -15,7 +15,27 @@ module kb_ke_util {
   /***************
   math layer
   ***************/
+  /* Input of the run_PCA function
+    data_matrix - raw data matrix in json format
+                  e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+                       u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+                       u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+                       u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
+  */
+  typedef structure {
+    string data_matrix;
+  } PCAParams;
 
+  /* Ouput of the run_PCA function
+    PCA_matrix - PCA matrix in json format with principal_component_1, principal_component_2 col
+                 and same index as original data matrix
+  */
+  typedef structure {
+    string PCA_matrix;
+  } PCAOutput;
+
+  /* run_PCA: perform PCA on a n-dimensional matrix*/
+  funcdef run_PCA(PCAParams params) returns(PCAOutput returnVal) authentication required;
 
   /* Input of the run_kmeans2 function
     dist_matrix - a condensed distance matrix (refer to run_pdist return)
@@ -41,10 +61,11 @@ module kb_ke_util {
   funcdef run_kmeans2(KmeansParams params) returns(KmeansOutput returnVal) authentication required;
 
   /* Input of the run_pdist function
-    data_matrix - raw data matrix with row_ids, col_ids and values
-                  e.g.{'row_ids': ['gene_1', 'gene_2'], 
-                       'col_ids': ['condition_1', 'condition_2'],
-                       'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
+    data_matrix - raw data matrix in json format
+                      e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+                           u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+                           u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+                           u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
 
     Optional arguments:
     metric - The distance metric to use. Default set to 'euclidean'.
@@ -60,7 +81,7 @@ module kb_ke_util {
           scipy.spatial.distance.pdist library are not implemented
   */
   typedef structure {
-    mapping<string, list<string>> data_matrix;
+    string data_matrix;
     string metric;
   } PdistParams;
 

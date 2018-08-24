@@ -10,6 +10,8 @@ import scipy.cluster.hierarchy as hier
 import scipy.cluster.vq as vq
 from matplotlib import pyplot as plt
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 from Workspace.WorkspaceClient import Workspace as Workspace
 
@@ -54,6 +56,18 @@ class KnowledgeEngineUtil:
                 pass
             else:
                 raise
+
+    def _validate_run_PCA_params(self, params):
+        """
+        _validate_run_PCA_params:
+                validates params passed to run_PCA method
+        """
+        log('start validating run_kmeans2 params')
+
+        # check for required parameters
+        for p in ['data_matrix']:
+            if p not in params:
+                raise ValueError('"{}" parameter is required, but missing'.format(p))
 
     def _validate_run_kmeans2_params(self, params):
         """
@@ -911,6 +925,39 @@ class KnowledgeEngineUtil:
         self.scratch = config['scratch']
 
         self.ws = Workspace(self.ws_url, token=self.token)
+
+    def run_PCA(self, params):
+        """
+        run_PCA: perform PCA on a n-dimensional matrix
+
+        data_matrix - raw data matrix in json format
+
+        return:
+        PCA_matrix - PCA matrix in json format with principal_component_1, principal_component_2 col
+                     and same index as original data matrix
+        """
+
+        log('--->\nrunning run_PCA\n')
+
+        self._validate_run_PCA_params(params)
+
+        data_matrix = params.get('data_matrix')
+        df = pd.read_json(data_matrix)
+        df.fillna(0, inplace=True)
+
+        # Standardizing the values
+        s_values = StandardScaler().fit_transform(df.values)
+
+        # Projection to 2D
+        pca = PCA(n_components=2)
+        principalComponents = pca.fit_transform(s_values)
+
+        principalDf = pd.DataFrame(data=principalComponents,
+                                   columns=['principal_component_1', 'principal_component_2'])
+
+        principalDf.index = df.index
+
+        return {'PCA_matrix': principalDf.to_json()}
 
     def run_kmeans2(self, params):
         """

@@ -108,6 +108,96 @@ sub new
 
 
 
+=head2 run_PCA
+
+  $returnVal = $obj->run_PCA($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.PCAParams
+$returnVal is a kb_ke_util.PCAOutput
+PCAParams is a reference to a hash where the following keys are defined:
+	data_matrix has a value which is a string
+PCAOutput is a reference to a hash where the following keys are defined:
+	PCA_matrix has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.PCAParams
+$returnVal is a kb_ke_util.PCAOutput
+PCAParams is a reference to a hash where the following keys are defined:
+	data_matrix has a value which is a string
+PCAOutput is a reference to a hash where the following keys are defined:
+	PCA_matrix has a value which is a string
+
+
+=end text
+
+=item Description
+
+run_PCA: perform PCA on a n-dimensional matrix
+
+=back
+
+=cut
+
+ sub run_PCA
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_PCA (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_PCA:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_PCA');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.run_PCA",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_PCA',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_PCA",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_PCA',
+				       );
+    }
+}
+ 
+
+
 =head2 run_kmeans2
 
   $returnVal = $obj->run_kmeans2($params)
@@ -218,7 +308,7 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.ht
 $params is a kb_ke_util.PdistParams
 $returnVal is a kb_ke_util.PdistOutput
 PdistParams is a reference to a hash where the following keys are defined:
-	data_matrix has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+	data_matrix has a value which is a string
 	metric has a value which is a string
 PdistOutput is a reference to a hash where the following keys are defined:
 	dist_matrix has a value which is a reference to a list where each element is a float
@@ -233,7 +323,7 @@ PdistOutput is a reference to a hash where the following keys are defined:
 $params is a kb_ke_util.PdistParams
 $returnVal is a kb_ke_util.PdistOutput
 PdistParams is a reference to a hash where the following keys are defined:
-	data_matrix has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+	data_matrix has a value which is a string
 	metric has a value which is a string
 PdistOutput is a reference to a hash where the following keys are defined:
 	dist_matrix has a value which is a reference to a list where each element is a float
@@ -1147,6 +1237,82 @@ a string
 
 
 
+=head2 PCAParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the run_PCA function
+data_matrix - raw data matrix in json format
+              e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+                   u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+                   u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+                   u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+data_matrix has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+data_matrix has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 PCAOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the run_PCA function
+PCA_matrix - PCA matrix in json format
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+PCA_matrix has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+PCA_matrix has a value which is a string
+
+
+=end text
+
+=back
+
+
+
 =head2 KmeansParams
 
 =over 4
@@ -1234,10 +1400,11 @@ idx has a value which is a reference to a list where each element is an int
 =item Description
 
 Input of the run_pdist function
-data_matrix - raw data matrix with row_ids, col_ids and values
-              e.g.{'row_ids': ['gene_1', 'gene_2'], 
-                   'col_ids': ['condition_1', 'condition_2'],
-                   'values': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]}
+data_matrix - raw data matrix in json format
+                  e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},
+                       u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
+                       u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
+                       u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
 
 Optional arguments:
 metric - The distance metric to use. Default set to 'euclidean'.
@@ -1259,7 +1426,7 @@ Note: Advanced metric functions 'minkowski', 'seuclidean' and 'mahalanobis' incl
 
 <pre>
 a reference to a hash where the following keys are defined:
-data_matrix has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+data_matrix has a value which is a string
 metric has a value which is a string
 
 </pre>
@@ -1269,7 +1436,7 @@ metric has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-data_matrix has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a string
+data_matrix has a value which is a string
 metric has a value which is a string
 
 

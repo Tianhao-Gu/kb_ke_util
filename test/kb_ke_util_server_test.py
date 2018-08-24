@@ -5,6 +5,7 @@ import json  # noqa: F401
 import time
 import requests  # noqa: F401
 import inspect
+import pandas as pd
 
 
 from os import environ
@@ -245,6 +246,29 @@ class kb_ke_utilTest(unittest.TestCase):
 
         onthology_dist_set = ret['onthology_dist_set']
         self.assertItemsEqual(onthology_dist_set, expect_steps)
+
+    def test_run_pca(self):
+        self.start_test()
+
+        data_matrix = """
+            {"condition_1":{"gene_1":0.1,"gene_2":0.3,"gene_3":null},
+             "condition_2":{"gene_1":0.2,"gene_2":0.4,"gene_3":null},
+             "condition_3":{"gene_1":0.3,"gene_2":0.5,"gene_3":null},
+             "condition_4":{"gene_1":0.4,"gene_2":0.6,"gene_3":null}}
+        """
+        # data_matrix = json.loads(json_str)
+        params = {'data_matrix': data_matrix}
+        ret = self.getImpl().run_PCA(self.ctx, params)[0]
+
+        self.assertTrue('PCA_matrix' in ret)
+
+        PCA_matrix = ret.get('PCA_matrix')
+        PCA_matrix = pd.read_json(PCA_matrix)
+
+        index = PCA_matrix.index.tolist()
+        col = PCA_matrix.columns.tolist()
+        self.assertItemsEqual(index, ['gene_1', 'gene_2', 'gene_3'])
+        self.assertItemsEqual(col, ['principal_component_1', 'principal_component_2'])
 
     def test_bad_run_kmeans2_params(self):
         self.start_test()
