@@ -21,9 +21,11 @@ module kb_ke_util {
                        u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
                        u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
                        u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
+    n_components - number of components (default 2)
   */
   typedef structure {
     string data_matrix;
+    int n_components;
   } PCAParams;
 
   /* Ouput of the run_PCA function
