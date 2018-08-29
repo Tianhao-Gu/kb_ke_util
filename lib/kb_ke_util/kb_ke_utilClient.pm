@@ -123,6 +123,7 @@ $params is a kb_ke_util.PCAParams
 $returnVal is a kb_ke_util.PCAOutput
 PCAParams is a reference to a hash where the following keys are defined:
 	data_matrix has a value which is a string
+	n_components has a value which is an int
 PCAOutput is a reference to a hash where the following keys are defined:
 	PCA_matrix has a value which is a string
 
@@ -136,6 +137,7 @@ $params is a kb_ke_util.PCAParams
 $returnVal is a kb_ke_util.PCAOutput
 PCAParams is a reference to a hash where the following keys are defined:
 	data_matrix has a value which is a string
+	n_components has a value which is an int
 PCAOutput is a reference to a hash where the following keys are defined:
 	PCA_matrix has a value which is a string
 
@@ -1251,6 +1253,7 @@ data_matrix - raw data matrix in json format
                    u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
                    u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
                    u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
+n_components - number of components (default 2)
 
 
 =item Definition
@@ -1260,6 +1263,7 @@ data_matrix - raw data matrix in json format
 <pre>
 a reference to a hash where the following keys are defined:
 data_matrix has a value which is a string
+n_components has a value which is an int
 
 </pre>
 
@@ -1269,6 +1273,7 @@ data_matrix has a value which is a string
 
 a reference to a hash where the following keys are defined:
 data_matrix has a value which is a string
+n_components has a value which is an int
 
 
 =end text
@@ -1286,7 +1291,8 @@ data_matrix has a value which is a string
 =item Description
 
 Ouput of the run_PCA function
-PCA_matrix - PCA matrix in json format
+PCA_matrix - PCA matrix in json format with principal_component_1, principal_component_2 col
+             and same index as original data matrix
 
 
 =item Definition

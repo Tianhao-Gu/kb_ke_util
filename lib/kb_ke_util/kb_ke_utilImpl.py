@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.3"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "717f125e069ed3e837aa493b9f2e79e3140c1755"
+    GIT_COMMIT_HASH = "3ff9f935a12667264aa1a1be46d215aea0b96ffd"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -47,10 +47,13 @@ class kb_ke_util:
            None}, u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3':
            None}, u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3':
            None}, u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3':
-           None}}) -> structure: parameter "data_matrix" of String
+           None}} n_components - number of components (default 2)) ->
+           structure: parameter "data_matrix" of String, parameter
+           "n_components" of Long
         :returns: instance of type "PCAOutput" (Ouput of the run_PCA function
-           PCA_matrix - PCA matrix in json format) -> structure: parameter
-           "PCA_matrix" of String
+           PCA_matrix - PCA matrix in json format with principal_component_1,
+           principal_component_2 col and same index as original data matrix)
+           -> structure: parameter "PCA_matrix" of String
         """
         # ctx is the context object
         # return variables are: returnVal

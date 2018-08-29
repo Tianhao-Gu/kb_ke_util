@@ -20,18 +20,22 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *                    u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3': None},
  *                    u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3': None},
  *                    u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3': None}}
+ * n_components - number of components (default 2)
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "data_matrix"
+    "data_matrix",
+    "n_components"
 })
 public class PCAParams {
 
     @JsonProperty("data_matrix")
     private String dataMatrix;
+    @JsonProperty("n_components")
+    private Long nComponents;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("data_matrix")
@@ -49,6 +53,21 @@ public class PCAParams {
         return this;
     }
 
+    @JsonProperty("n_components")
+    public Long getNComponents() {
+        return nComponents;
+    }
+
+    @JsonProperty("n_components")
+    public void setNComponents(Long nComponents) {
+        this.nComponents = nComponents;
+    }
+
+    public PCAParams withNComponents(Long nComponents) {
+        this.nComponents = nComponents;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -61,7 +80,7 @@ public class PCAParams {
 
     @Override
     public String toString() {
-        return ((((("PCAParams"+" [dataMatrix=")+ dataMatrix)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((("PCAParams"+" [dataMatrix=")+ dataMatrix)+", nComponents=")+ nComponents)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

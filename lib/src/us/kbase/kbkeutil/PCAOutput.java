@@ -15,7 +15,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: PCAOutput</p>
  * <pre>
  * Ouput of the run_PCA function
- * PCA_matrix - PCA matrix in json format
+ * PCA_matrix - PCA matrix in json format with principal_component_1, principal_component_2 col
+ *              and same index as original data matrix
  * </pre>
  * 
  */
