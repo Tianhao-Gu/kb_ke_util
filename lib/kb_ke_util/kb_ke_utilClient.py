@@ -42,10 +42,13 @@ class kb_ke_util(object):
            None}, u'condition_2': {u'gene_1': 0.2, u'gene_2': 0.4, u'gene_3':
            None}, u'condition_3': {u'gene_1': 0.3, u'gene_2': 0.5, u'gene_3':
            None}, u'condition_4': {u'gene_1': 0.4, u'gene_2': 0.6, u'gene_3':
-           None}}) -> structure: parameter "data_matrix" of String
+           None}} n_components - number of components (default 2)) ->
+           structure: parameter "data_matrix" of String, parameter
+           "n_components" of Long
         :returns: instance of type "PCAOutput" (Ouput of the run_PCA function
-           PCA_matrix - PCA matrix in json format) -> structure: parameter
-           "PCA_matrix" of String
+           PCA_matrix - PCA matrix in json format with principal_component_1,
+           principal_component_2 col and same index as original data matrix)
+           -> structure: parameter "PCA_matrix" of String
         """
         return self._client.call_method(
             'kb_ke_util.run_PCA',

@@ -931,6 +931,7 @@ class KnowledgeEngineUtil:
         run_PCA: perform PCA on a n-dimensional matrix
 
         data_matrix - raw data matrix in json format
+        n_components - number of components (default 2)
 
         return:
         PCA_matrix - PCA matrix in json format with principal_component_1, principal_component_2 col
@@ -942,18 +943,26 @@ class KnowledgeEngineUtil:
         self._validate_run_PCA_params(params)
 
         data_matrix = params.get('data_matrix')
+        n_components = params.get('n_components', 2)
         df = pd.read_json(data_matrix)
         df.fillna(0, inplace=True)
+
+        if n_components > min(df.index.size, df.columns.size):
+            raise ValueError('Number of components should be less than min(n_samples, n_features)')
 
         # Standardizing the values
         s_values = StandardScaler().fit_transform(df.values)
 
-        # Projection to 2D
-        pca = PCA(n_components=2)
+        # Projection to ND
+        pca = PCA(n_components=n_components)
         principalComponents = pca.fit_transform(s_values)
 
+        col = list()
+        for i in range(n_components):
+            col.append('principal_component_{}'.format(i+1))
+
         principalDf = pd.DataFrame(data=principalComponents,
-                                   columns=['principal_component_1', 'principal_component_2'])
+                                   columns=col)
 
         principalDf.index = df.index
 
