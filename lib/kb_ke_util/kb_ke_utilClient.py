@@ -33,6 +33,25 @@ class kb_ke_util(object):
             trust_all_ssl_certificates=trust_all_ssl_certificates,
             auth_svc=auth_svc)
 
+    def linkage_2_newick(self, params, context=None):
+        """
+        run_PCA: perform PCA on a n-dimensional matrix
+        :param params: instance of type "NewickParams" (Input of the
+           linkage_2_newick function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) labels - items
+           corresponding to each linkage_matrix element (If labels are given,
+           result flat_cluster will be mapped to element in labels.)) ->
+           structure: parameter "linkage_matrix" of list of list of Double,
+           parameter "labels" of list of String
+        :returns: instance of type "NewickOutput" (Ouput of the
+           linkage_2_newick function newick - newick representation of tree
+           https://en.wikipedia.org/wiki/Newick_format) -> structure:
+           parameter "newick" of String
+        """
+        return self._client.call_method(
+            'kb_ke_util.linkage_2_newick',
+            [params], self._service_ver, context)
+
     def run_PCA(self, params, context=None):
         """
         run_PCA: perform PCA on a n-dimensional matrix

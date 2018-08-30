@@ -108,6 +108,98 @@ sub new
 
 
 
+=head2 linkage_2_newick
+
+  $returnVal = $obj->linkage_2_newick($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_ke_util.NewickParams
+$returnVal is a kb_ke_util.NewickOutput
+NewickParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a float
+	labels has a value which is a reference to a list where each element is a string
+NewickOutput is a reference to a hash where the following keys are defined:
+	newick has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_ke_util.NewickParams
+$returnVal is a kb_ke_util.NewickOutput
+NewickParams is a reference to a hash where the following keys are defined:
+	linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a float
+	labels has a value which is a reference to a list where each element is a string
+NewickOutput is a reference to a hash where the following keys are defined:
+	newick has a value which is a string
+
+
+=end text
+
+=item Description
+
+run_PCA: perform PCA on a n-dimensional matrix
+
+=back
+
+=cut
+
+ sub linkage_2_newick
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function linkage_2_newick (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to linkage_2_newick:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'linkage_2_newick');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_ke_util.linkage_2_newick",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'linkage_2_newick',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method linkage_2_newick",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'linkage_2_newick',
+				       );
+    }
+}
+ 
+
+
 =head2 run_PCA
 
   $returnVal = $obj->run_PCA($params)
@@ -1232,6 +1324,83 @@ a string
 =begin text
 
 a string
+
+=end text
+
+=back
+
+
+
+=head2 NewickParams
+
+=over 4
+
+
+
+=item Description
+
+Input of the linkage_2_newick function
+linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+labels - items corresponding to each linkage_matrix element 
+         (If labels are given, result flat_cluster will be mapped to element in labels.)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a float
+labels has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+linkage_matrix has a value which is a reference to a list where each element is a reference to a list where each element is a float
+labels has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 NewickOutput
+
+=over 4
+
+
+
+=item Description
+
+Ouput of the linkage_2_newick function
+newick - newick representation of tree
+         https://en.wikipedia.org/wiki/Newick_format
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+newick has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+newick has a value which is a string
+
 
 =end text
 
