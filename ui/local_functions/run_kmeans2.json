@@ -3,7 +3,7 @@
     "short_description" : "a wrapper method for  scipy.cluster.vq.kmeans2.",
     "long_description" : "a wrapper method for  scipy.cluster.vq.kmeans2.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []

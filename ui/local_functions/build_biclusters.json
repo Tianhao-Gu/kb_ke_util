@@ -3,7 +3,7 @@
     "short_description" : "Build biclusters and return list of biclusters.",
     "long_description" : "Build biclusters and return list of biclusters.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []

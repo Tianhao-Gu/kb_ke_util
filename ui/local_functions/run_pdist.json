@@ -3,7 +3,7 @@
     "short_description" : "A wrapper method for scipy.spatial.distance.pdist.",
     "long_description" : "A wrapper method for scipy.spatial.distance.pdist.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []
