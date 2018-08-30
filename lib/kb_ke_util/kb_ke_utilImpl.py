@@ -23,7 +23,7 @@ class kb_ke_util:
     ######################################### noqa
     VERSION = "1.0.3"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_ke_util.git"
-    GIT_COMMIT_HASH = "3ff9f935a12667264aa1a1be46d215aea0b96ffd"
+    GIT_COMMIT_HASH = "8f7d69981a2daa0becdd0db336e3cb2e1a7a567b"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -37,6 +37,41 @@ class kb_ke_util:
         #END_CONSTRUCTOR
         pass
 
+
+    def linkage_2_newick(self, ctx, params):
+        """
+        run_PCA: perform PCA on a n-dimensional matrix
+        :param params: instance of type "NewickParams" (Input of the
+           linkage_2_newick function linkage_matrix - hierarchical clustering
+           linkage matrix (refer to run_linkage return) labels - items
+           corresponding to each linkage_matrix element (If labels are given,
+           result flat_cluster will be mapped to element in labels.)) ->
+           structure: parameter "linkage_matrix" of list of list of Double,
+           parameter "labels" of list of String
+        :returns: instance of type "NewickOutput" (Ouput of the
+           linkage_2_newick function newick - newick representation of tree
+           https://en.wikipedia.org/wiki/Newick_format) -> structure:
+           parameter "newick" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN linkage_2_newick
+        for key, value in params.iteritems():
+            if isinstance(value, basestring):
+                params[key] = value.strip()
+
+        self.config['KB_AUTH_TOKEN'] = ctx["token"]
+
+        ke_util = KnowledgeEngineUtil(self.config)
+        returnVal = ke_util.linkage_2_newick(params)
+        #END linkage_2_newick
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method linkage_2_newick return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
 
     def run_PCA(self, ctx, params):
         """

@@ -15,6 +15,28 @@ module kb_ke_util {
   /***************
   math layer
   ***************/
+
+    /* Input of the linkage_2_newick function
+    linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+    labels - items corresponding to each linkage_matrix element 
+             (If labels are given, result flat_cluster will be mapped to element in labels.)
+  */
+  typedef structure {
+    list<list<float>> linkage_matrix;
+    list<string> labels;
+  } NewickParams;
+
+  /* Ouput of the linkage_2_newick function
+    newick - newick representation of tree
+             https://en.wikipedia.org/wiki/Newick_format
+  */
+  typedef structure {
+    string newick;
+  } NewickOutput;
+
+  /* linkage_2_newick: convert a linkage matrix to newick format*/
+  funcdef linkage_2_newick(NewickParams params) returns(NewickOutput returnVal) authentication required;
+
   /* Input of the run_PCA function
     data_matrix - raw data matrix in json format
                   e.g.{u'condition_1': {u'gene_1': 0.1, u'gene_2': 0.3, u'gene_3': None},

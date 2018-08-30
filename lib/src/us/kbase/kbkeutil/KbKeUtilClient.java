@@ -163,6 +163,24 @@ public class KbKeUtilClient {
     }
 
     /**
+     * <p>Original spec-file function name: linkage_2_newick</p>
+     * <pre>
+     * run_PCA: perform PCA on a n-dimensional matrix
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbkeutil.NewickParams NewickParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbkeutil.NewickOutput NewickOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public NewickOutput linkage2Newick(NewickParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<NewickOutput>> retType = new TypeReference<List<NewickOutput>>() {};
+        List<NewickOutput> res = caller.jsonrpcCall("kb_ke_util.linkage_2_newick", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: run_PCA</p>
      * <pre>
      * run_PCA: perform PCA on a n-dimensional matrix

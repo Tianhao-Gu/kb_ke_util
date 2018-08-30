@@ -917,6 +917,19 @@ class KnowledgeEngineUtil:
                 weighted_edges[parent_term][child] = weight / 2.0
                 self._update_weighted_edges(weighted_edges, child, weight / 2.0)
 
+    def _getNewick(self, node, newick, parentdist, leaf_names):
+        if node.is_leaf():
+            return "%s:%.2f%s" % (leaf_names[node.id], parentdist - node.dist, newick)
+        else:
+            if len(newick) > 0:
+                newick = "):%.2f%s" % (parentdist - node.dist, newick)
+            else:
+                newick = ");"
+            newick = self._getNewick(node.get_left(), newick, node.dist, leaf_names)
+            newick = self._getNewick(node.get_right(), ",%s" % (newick), node.dist, leaf_names)
+            newick = "(%s" % (newick)
+            return newick
+
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.token = config['KB_AUTH_TOKEN']
@@ -925,6 +938,30 @@ class KnowledgeEngineUtil:
         self.scratch = config['scratch']
 
         self.ws = Workspace(self.ws_url, token=self.token)
+
+    def linkage_2_newick(self, params):
+        """
+        linkage_2_newick: convert a linkage matrix to newick format
+
+        linkage_matrix - hierarchical clustering linkage matrix (refer to run_linkage return)
+        labels - items corresponding to each linkage_matrix element
+             (If labels are given, result flat_cluster will be mapped to element in labels.)
+
+        return:
+        newick: newick representation of tree
+                https://en.wikipedia.org/wiki/Newick_format
+        """
+
+        log('--->\nrunning linkage_2_newick\n')
+
+        linkage_matrix = params.get('linkage_matrix')
+        labels = params.get('labels')
+
+        tree = hier.to_tree(linkage_matrix, False)
+
+        newick = self._getNewick(tree, "", tree.dist, labels)
+
+        return {'newick': newick}
 
     def run_PCA(self, params):
         """

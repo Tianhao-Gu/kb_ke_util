@@ -356,6 +356,20 @@ class kb_ke_utilTest(unittest.TestCase):
         ret = self.getImpl().run_linkage(self.ctx, params)[0]
         self.check_run_linkage_output(ret)
 
+    def test_linkage_2_newick(self):
+        self.start_test()
+
+        linkage_matrix = [[1.0, 2.0, 0.6, 2.0],
+                          [0.0, 3.0, 0.87177978, 3.0]]
+        params = {'linkage_matrix': linkage_matrix,
+                  'labels': ['gene_1', 'gene_2', 'gene_3']}
+        ret = self.getImpl().linkage_2_newick(self.ctx, params)[0]
+
+        self.assertIn('newick', ret)
+        newick = ret.get('newick')
+        expected_newick = '((gene_3:0.60,gene_2:0.60):0.27,gene_1:0.87);'
+        self.assertEqual(newick, expected_newick)
+
     def test_bad_run_fcluster_params(self):
         self.start_test()
         invalidate_params = {'missing_linkage_matrix': 'linkage_matrix',
