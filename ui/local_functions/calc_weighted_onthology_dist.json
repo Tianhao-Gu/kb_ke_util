@@ -3,7 +3,7 @@
     "short_description" : "Calculate weighted onthology distance.",
     "long_description" : "Sum weighted edges.\nEdges are weighted from root to leaves.\nRoot edges are weighted 1/2.\nEach child's edge weights half of its parent's edge.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []

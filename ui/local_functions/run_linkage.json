@@ -3,7 +3,7 @@
     "short_description" : "A wrapper method for scipy.cluster.hierarchy.linkage.",
     "long_description" : "A wrapper method for scipy.cluster.hierarchy.linkage.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []

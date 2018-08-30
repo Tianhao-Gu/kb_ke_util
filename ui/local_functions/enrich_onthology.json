@@ -3,7 +3,7 @@
     "short_description" : "Run GO term enrichment analysis and store result enrichment info as dict structure.",
     "long_description" : "Run GO term enrichment analysis and store result enrichment info as dict structure.",
     "tags" : {
-        "categories" : ["KnowledgeEngine"],
+        "categories" : ["util"],
         "input": {
             "file_types": [],
             "kb_types": []
