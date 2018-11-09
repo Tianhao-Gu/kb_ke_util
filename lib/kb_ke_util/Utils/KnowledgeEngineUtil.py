@@ -5,6 +5,7 @@ import errno
 import uuid
 import json
 import fisher
+import sys
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hier
 import scipy.cluster.vq as vq
@@ -938,6 +939,7 @@ class KnowledgeEngineUtil:
         self.scratch = config['scratch']
 
         self.ws = Workspace(self.ws_url, token=self.token)
+        sys.setrecursionlimit(150000)
 
     def linkage_2_newick(self, params):
         """
@@ -1100,7 +1102,7 @@ class KnowledgeEngineUtil:
         dist_matrix - 1D distance matrix (refer to run_pdist return)
 
         Optional arguments:
-        method - The linkage algorithm to use. Default set to 'ward'.
+        method - The linkage algorithm to use. Default set to 'single'.
                  The method can be
                  ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
                  Details refer to:
@@ -1117,7 +1119,7 @@ class KnowledgeEngineUtil:
         dist_matrix = params.get('dist_matrix')
         method = params.get('method')
         if not method:
-            method = 'ward'
+            method = 'single'
 
         log('start computing linkage matrix')
         linkage_matrix = hier.linkage(dist_matrix, method=str(method)).tolist()
