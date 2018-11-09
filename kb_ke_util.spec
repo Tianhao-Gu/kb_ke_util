@@ -127,7 +127,7 @@ module kb_ke_util {
     dist_matrix - 1D distance matrix (refer to run_pdist return)
 
     Optional arguments:
-    method - The linkage algorithm to use. Default set to 'ward'.
+    method - The linkage algorithm to use. Default set to 'single'.
              The method can be 
              ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
              Details refer to: 
